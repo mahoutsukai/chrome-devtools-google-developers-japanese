@@ -12,7 +12,7 @@ Chrome DevTools — Google Developers 日本語訳
 - セカンダリページについては、すべてのリンクを掲載していません。
 
 
-| Chrome DevTools - Google Developers | This repo URL (github.io) |
+| Chrome DevTools - Google Developers URL | This repo URL (github.io) |
 | :-------------- | :------------- |
 | [Chrome DevTools — Google Developers](https://developers.google.com/chrome-developer-tools/) | |
 | [Authoring & development workflow](https://developers.google.com/chrome-developer-tools/docs/authoring-development-workflow) | |
