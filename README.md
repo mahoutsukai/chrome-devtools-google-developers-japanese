@@ -2,11 +2,11 @@ Chrome DevTools — Google Developers 日本語訳
 ==========================================
 
 
-- Chrome DevTools — Google Developers の翻訳です。
+- [Chrome DevTools — Google Developers](https://developers.google.com/chrome-developer-tools/) の翻訳です。
 - 生のGoogle 翻訳、生のエキサイト翻訳の文章よりほんのちょっとだけマシ、という程度の翻訳ですのでご注意ください。
 - I love Org-Mode ;)
 
-https://developers.google.com/chrome-developer-tools/
+
 
 
 ### TOC
