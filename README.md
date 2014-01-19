@@ -3,14 +3,13 @@ Chrome DevTools — Google Developers 日本語訳
 
 
 - Chrome DevTools — Google Developers の翻訳です。
-- 生のGoogle 翻訳、生のエキサイト翻訳の文章よりちょっとだけマシ、という程度の翻訳です。
-
+- 生のGoogle 翻訳、生のエキサイト翻訳の文章よりほんのちょっとだけマシ、という程度の翻訳ですのでご注意ください。
 
 
 https://developers.google.com/chrome-developer-tools/
 
 
-| Chrome DevTools | This github.io |
+| Chrome DevTools | This repo URL (github.io) |
 | :-------------- | :------------- |
 | * [Chrome DevTools — Google Developers](https://developers.google.com/chrome-developer-tools/)  |  |
 | * [Authoring & development workflow](https://developers.google.com/chrome-developer-tools/docs/authoring-development-workflow)    |  |
@@ -37,6 +36,6 @@ https://developers.google.com/chrome-developer-tools/
 | **  [Creating A Clean Testing Environment](https://developers.google.com/chrome-developer-tools/docs/clean-testing-environment)     |  |
 | ** [Videos](https://developers.google.com/chrome-developer-tools/docs/videos)       |  |
 | ** [Blog Posts](https://developers.google.com/chrome-developer-tools/docs/blog-posts)     |  |
-| ** [Google Chrome Developer Tools - Google グループ](https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools) (Google グループのページへ)  |  |
+| ** [Google Chrome Developer Tools - Google グループ](https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools) | (Google グループのページへ) |
 | * [Contributing to Chrome DevTools](https://developers.google.com/chrome-developer-tools/docs/contributing)     |  |
 | * [Memory Analysis 101](https://developers.google.com/chrome-developer-tools/docs/memory-analysis-101) メモリ分析 101 (Last updated 2013-07-08)     | [18-Memory Analysis 101](http://mahoutsukai.github.io/chrome-devtools-google-developers-japanese/knowledge/Chrome%20DevTools%20%E2%80%94%20Google%20Developers/18-Memory%20Analysis%20101.html) |
