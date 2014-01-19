@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>18-Memory Analysis 101</title>
+<!-- 2014-01-19 Sun 22:26 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="chidamiyuki" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/org/worg.css" />
+<link rel="stylesheet" type="text/css" href="../css/mi.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">18-Memory Analysis 101</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Memory Analysis 101 メモリ分析 101 (Last updated 2013-07-08)</a>
+<ul>
+<li><a href="#sec-1-1">1.1. 一般的な用語 Common Terms</a>
+<ul>
+<li><a href="#sec-1-1-1">1.1.1. オブジェクトサイズ Object Sizes</a></li>
+<li><a href="#sec-1-1-2">1.1.2. 保持パス Retaining Paths</a></li>
+<li><a href="#sec-1-1-3">1.1.3. ドミネータ Dominators</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-2">1.2. V8詳細 V8 Specifics</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. JavaScript のオブジェクトの表記 JavaScript Object Representation</a></li>
+<li><a href="#sec-1-2-2">1.2.2. オブジェクトグループ Object Groups</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> <a href="https://developers.google.com/chrome-developer-tools/docs/memory-analysis-101">Memory Analysis 101</a> メモリ分析 101 (Last updated 2013-07-08)</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<span class="timestamp-wrapper"><span class="timestamp">[2014-01-16 Thu 06:29]</span></span>
+これはメモリ分析への入門です。
+ここで記述された用語と概念は、Heap Profiler UI (ヒープ・プロフィーラー UI) および対応するドキュメンテーションの中で使用されます。
+ツールを有効に使用するのにそれらに精通している必要があります。
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> 一般的な用語 Common Terms</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+このセクションでは、メモリ分析で使用される一般的な用語を説明し、異なる言語のためのメモリプロファイリングツールの様々に適用可能である。
+すでに経験をお持ちの場合は、たとえば、Java または .NET メモリプロファイラ、あなたがそれらに精通しているならその可能性が高い。
+</p>
+</div>
+
+<div id="outline-container-sec-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> オブジェクトサイズ Object Sizes</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<p>
+メモリは 2 つの方法でオブジェクトが保持することができます :
+直接オブジェクト自体によって、
+暗黙に他のオブジェクトへの言及の保持によって、
+そして、したがって、彼らがガベージコレクタ (略して GC) によって自動的に配置されるのを防ぎます。
+</p>
+
+<p>
+オブジェクト自体によって保持されるメモリのサイズは <b>shallow size</b> と呼ばれます。
+典型的な JavaScript オブジェクトはそれらの記述および即時 (immediate) の値の格納のためにあるメモリを取っておきます。
+</p>
+
+<p>
+通常、配列およびストリングだけがかなりの (significant) shallow サイズを持つことができます。
+ただし、文字列は、多くの場合、JavaScript のヒープ (heap) 上にわずかなラッパーオブジェクトを公開する、レンダラ (renderer) メモリでの主記憶装置 (main storage) を持っている。
+</p>
+
+<p>
+しかしながら、小さなオブジェクトさえ、他のオブジェクトが自動的なガベージ・コレクション・プロセスによって配置されるのを防ぐことにより、
+大量のメモリを間接的に保持することができます。
+オブジェクトがそれ自身削除される時、解放されるメモリのサイズ、および GC のルート (roots) から到達不能なその依存 (扶養家族) オブジェクトは、
+<b>retained size</b> (保持されたサイズ) と呼ばれます。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2"><span class="section-number-4">1.1.2</span> 保持パス Retaining Paths</h4>
+<div class="outline-text-4" id="text-1-1-2">
+<p>
+ヒープ (heep, 山) は、相互に連結したオブジェクトのネットワークです。
+数学的な世界では、この構造はグラフと呼ばれます。
+グラフは、エッジによって接続されたノードから構成 (構築) される。
+ノードとエッジ (端) の両方にはラベルがあります :
+ノード（オブジェクト）は、それらを構築するために使用されたコンストラクタ関数の名前を使用して、ラベル付けされ、
+エッジはプロパティの名前を使用してラベルが付いています。
+</p>
+
+<p>
+別のものからの1つのオブジェクトに達するために横断される必要のある、端のシーケンス、
+これは path と呼ばれる。
+通常、我々は、単に simple (単純な)パス (つまり同じノードを 2 度通り抜けないパス) に興味を持っている。
+</p>
+
+<p>
+私たちは GC のルートから特別のオブジェクトまで保持するパスを retaining path (任意のパス) と呼びます。
+そのようなパスがない場合、オブジェクトは手は unreachable (到達不能) と呼ばれ、ガベージコレクション中に廃棄される可能性があります。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-1-3" class="outline-4">
+<h4 id="sec-1-1-3"><span class="section-number-4">1.1.3</span> ドミネータ Dominators</h4>
+<div class="outline-text-4" id="text-1-1-3">
+<p>
+オブジェクト A の支配者 (dominator) は、ルート (根) からオブジェクトAまですべての単純路 (simple path) の中に存在するオブジェクトです。
+それはすなわち、 (カットされているすべての参照を備えた) ヒープから支配オブジェクトを取り除いて、意味する、 ???
+オブジェクトA は、GC のルートから到達不可能になり、配置されるだろう。 ???
+</p>
+
+<p>
+オブジェクト (それぞれ) に正確に 1 つの支配者があるので、支配者オブジェクトはツリー構造を含みます。
+オブジェクトの支配者は、それが支配するオブジェクトへの直接参照が不足しているかもしれません。
+すなわち、支配者木はグラフのスパニング・ツリーではありません。 ( -&gt; スパン, 全期間)
+</p>
+
+<p>
+他のオブジェクトを支配する場合、収集状のオブジェクトは大きな量のメモリを保持するかもしれません。
+木のそのようなノードは accumulation points (集積点) と呼ばれます。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> V8詳細 V8 Specifics</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+このセクションでは、私たちは、単に V8 JavaScript バーチャル・マシンに相当するいくつかのメモリ関連のトピックについて記述します。
+それらを読むことは、ヒープのスナップショットがこのように見える理由を理解するのに役立つかもしれません。
+</p>
+</div>
+
+<div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> JavaScript のオブジェクトの表記 JavaScript Object Representation</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<p>
+数字は即値 31 ビット整数値 (それらは略して small integers &lt;小さな整数&gt; 、あるいは SMI と呼ばれます)、
+あるいはヒープオブジェクト (ヒープ番号と呼ばれる) として示すことができます。
+後者は、 SMI 形式 (例えば倍) に入ることができない値に使用されます、 ???
+またはケースのために、あるいは値を boxed (ボックス化) する必要があるときに、例えば、その上でプロパティをセットするために。 ???
+</p>
+
+<p>
+文字列の内容は VM ヒープ、あるいは外部レンダラのメモリのいずれかに格納することができます。
+Web (例えばスクリプトソース) から受信したコンテンツは、VM のヒープにコピーされない代わりに、ラッパーオブジェクトが作成され、外部ストレージへのアクセスするために使用される。
+</p>
+
+<p>
+2 つの文字列が連結される場合、それらの内容は最初に別々に格納され、両論文字列と呼ばれるオブジェクトを使用して、単に論理的に結合されます。
+反対意見の接着点は内容を糸に通します、それが必要な場合に限り、行なわれる、例えば、連結されたストリングのサブストリングを構築する必要がある場合。
+デメリットの文字列の内容の接合は、それが必要なの場合にのみ実行され、例えば、連結された文字列のサブ (部分) 文字列を構築する必要があるとき。
+</p>
+
+<p>
+配列は、大量のデータの格納のために V8 VM の中で広範囲に使用される。
+辞書 (キーと値のペアのセット) は配列によってバックアップされる。
+このため、配列は JavaScript オブジェクト用の基本構成要素である。
+典型的な JavaScript オブジェクトは2つの配列を所有します :
+指定されたプロパティを格納するための一つ、数値の要素を格納するためののもう一つ。
+その場合に、プロパティの数が非常に少ない場合、それらは、JavaScript オブジェクト自体に内部に格納することができます。
+</p>
+
+<p>
+map オブジェクトは、オブジェクト種類およびそのレイアウトについて記述します。
+<a href="https://developers.google.com/v8/design#prop_access">Design Elements - Chrome V8</a> に記載されるように、例えば、マップは、暗黙的なオブジェクト階層を記述するために使用される。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> オブジェクトグループ Object Groups</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<p>
+各ネイティブオブジェクトグループはお互いに相互参照を保持するオブジェクトから構成されています。
+ところで、DOMを例えばサブツリーと考えてください、
+すべてのノードがその親に対してリンクを持ち、次の子どもおよび次の兄弟に対してリンクを持ちそれにより、連結グラフを形成する。
+JavaScript ヒープ (それは、なぜそれらが 0 のサイズを持つかである) の中で在来のオブジェクトが表わされないことに注意してください。
+代わりに、ラッパーオブジェクトが作成されます。
+ラッパーオブジェクトはそれぞれ、それへの転送する (リダイレクトする) コマンドのために、対応するネイティブオブジェクトへの参照を保持します。
+それ自身のターンでは、オブジェクト・グループはラッパーオブジェクトを保持します。
+しかしながら、GC がそのラッパーがもはや参照されないオブジェクト・グループを解放するのに十分に利口なように、
+これは回収不能のサイクルを作成しません。
+しかし、単一のラッパーを解放することを忘れることは全体のグループおよび関連するラッパーを保持するでしょう。
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: chidamiyuki</p>
+<p class="date">Created: 2014-01-19 Sun 22:26</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.1)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

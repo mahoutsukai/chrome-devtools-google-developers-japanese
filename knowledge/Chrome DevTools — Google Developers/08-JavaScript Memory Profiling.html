@@ -1,0 +1,1776 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>08-JavaScript Memory Profiling</title>
+<!-- 2014-01-19 Sun 22:25 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="chidamiyuki" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/org/worg.css" />
+<link rel="stylesheet" type="text/css" href="../css/mi.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">08-JavaScript Memory Profiling</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. JavaScript Memory Profiling JavaScript のメモリのプロファイリング (Last updated 2013-12-03)</a>
+<ul>
+<li><a href="#sec-1-1">1.1. 自身に尋ねる質問 (自問する質問)  Questions to ask yourself</a></li>
+<li><a href="#sec-1-2">1.2. 用語や基礎  Terminology and Fundamentals</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. オブジェクトサイズ  Object sizes</a></li>
+<li><a href="#sec-1-2-2">1.2.2. Object's Retaining Tree  オブジェクトのリテーニング (保持) ツリー</a></li>
+<li><a href="#sec-1-2-3">1.2.3. Dominators  ドミネータ, 支配者</a></li>
+<li><a href="#sec-1-2-4">1.2.4. V8 Specifics  V8 の詳細</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-3">1.3. Prerequisites and helpful tips  前提条件と役立つヒント</a>
+<ul>
+<li><a href="#sec-1-3-1">1.3.1. Chrome Task Manager  Chrome タスクマネージャ</a></li>
+<li><a href="#sec-1-3-2">1.3.2. Identifying a Memory Problem with the DevTools Timeline  DevTools タイムラインとメモリの問題の識別</a></li>
+<li><a href="#sec-1-3-3">1.3.3. Proving a Problem Exists  問題の存在の証明</a></li>
+<li><a href="#sec-1-3-4">1.3.4. Garbage Collection  ガーベジコレクション</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-4">1.4. Heap Profiler  ヒーププロファイラ</a>
+<ul>
+<li><a href="#sec-1-4-1">1.4.1. Taking a snapshot  スナップショットを作成</a></li>
+<li><a href="#sec-1-4-2">1.4.2. Clearing snapshots  スナップショットをクリア</a></li>
+<li><a href="#sec-1-4-3">1.4.3. Switching between snapshot views  スナップショットビューを切り替える</a></li>
+<li><a href="#sec-1-4-4">1.4.4. Looking up color coding  カラーコードを調べる</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-5">1.5. Views in detail  ビューの詳細</a>
+<ul>
+<li><a href="#sec-1-5-1">1.5.1. Summary view  概要ビュー</a></li>
+<li><a href="#sec-1-5-2">1.5.2. Comparison view  比較ビュー</a></li>
+<li><a href="#sec-1-5-3">1.5.3. Containment view  封じ込めビュー</a></li>
+<li><a href="#sec-1-5-4">1.5.4. Uncovering DOM leaks  DOMリークを暴く</a></li>
+<li><a href="#sec-1-5-5">1.5.5. Dominators view  ドミネータ (支配者) ビュー</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-6">1.6. <b>Object allocation tracker</b>  オブジェクト割り当てのトラッカー (追跡者)</a>
+<ul>
+<li><a href="#sec-1-6-1">1.6.1. Enabling and using the Object Tracker  オブジェクトトラッカー (追跡) の有効化と使用</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-7">1.7. Memory Profiling FAQ  メモリのプロファイリングよくある質問</a>
+<ul>
+<li><a href="#sec-1-7-1">1.7.1. Q: オブジェクトのすべてのプロパティが表示されない、彼らの文字列以外の値が表示されない！ なぜ？</a></li>
+<li><a href="#sec-1-7-2">1.7.2. Q: <b>@</b> の文字の後の数字は何を意味する？ &#x2013; アドレスまたは ID ですか？ ID 値は本当にユニークですか？</a></li>
+<li><a href="#sec-1-7-3">1.7.3. Q: 「死んだ」（到達不能）"dead" (unreachable) オブジェクトは、スナップショットに含まれていますか？</a></li>
+<li><a href="#sec-1-7-4">1.7.4. Q: GC のルートには何が含まれて (comprises) いますか？</a></li>
+<li><a href="#sec-1-7-5">1.7.5. Q: 私はメモリリークを検出するために Heap Profiler (ヒーププロファイラ) と Timeline Memory (タイムラインメモリ) ビューを使用するように言われてきた。どのツールを、最初に使用すべきですか？</a></li>
+<li><a href="#sec-1-7-6">1.7.6. Q: 私は、ヒープスナップショットで DOM ノードの数に気づきました。それは、一部は赤で強調 (ハイライト) され「独立している (デタッチ, Detached) DOM ツリー」として示されていた、一方で、他のものは黄色で。 これは何を意味しますか？</a></li>
+<li><a href="#sec-1-7-7">1.7.7. Q: Shallow Size (浅く) の列と Retained Size (保持された) の列 (カラム) は何を表わしますか。また、それらの間の違いは何ですか。</a></li>
+<li><a href="#sec-1-7-8">1.7.8. Q: constructor (コンストラクタ) と retained views (保持ビュー) に多くのデータがあります。 漏れがあるかどうか、発見するためにどこから調べ始めるべき？</a></li>
+<li><a href="#sec-1-7-9">1.7.9. Q: 異なる Summary (概要)、Comparison (比較)、Dominators (ドミネータ) と Containment (封じ込め) ビューの違いは何ですか？</a></li>
+<li><a href="#sec-1-7-10">1.7.10. Q: Heap (ヒープ) プロファイラのさまざまなコンストラクタ (グループ) エントリはどのように対応していますか？</a></li>
+<li><a href="#sec-1-7-11">1.7.11. Q: 図 (数字) に影響を及ぼしているかもしれないものとして、Chrome でオフする必要があることはありますか？</a></li>
+<li><a href="#sec-1-7-12">1.7.12. Closing remarks  結びの言葉</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-8">1.8. Supporting Demos  サポートのデモ</a>
+<ul>
+<li><a href="#sec-1-8-1">1.8.1. Debugging Memory Leaks  メモリリークをデバッグ</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-9">1.9. Community Resources  コミュニティリソース</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> <a href="https://developers.google.com/chrome-developer-tools/docs/javascript-memory-profiling">JavaScript Memory Profiling</a> JavaScript のメモリのプロファイリング (Last updated 2013-12-03)</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<span class="timestamp-wrapper"><span class="timestamp">[2014-01-14 Tue 13:09]</span></span>
+memory leak (メモリーリーク) とは、利用可能なコンピュータ・メモリーの徐々に損失することです。
+プログラムが、それが一時使用のために得たメモリを繰り返し返さない場合、それが生じます (occurs) 。
+(プログラムが繰り返し、それが一時的に使用を得ていたメモリを返すことに失敗した場合に発生します。 )
+JavaScriptのWebアプリは、多くの場合、ネイティブアプリケーションが行うことと同様のメモリ関連の問題に苦しむことになります、
+このような leaks (リーク) や肥大化 (bloat) だけではなく、彼らはまた、garbage collection pauses (ガベージコレクションの休止) に対処する必要もあります。
+</p>
+
+<p>
+JavaScript は自動メモリ管理のためのガベージコレクションを使用していますが、
+効果的な (effective <a href="http://www.html5rocks.com/en/tutorials/memory/effectivemanagement/">Effectively managing memory at Gmail scale - HTML5 Rocks</a> ) メモリ管理は依然として重要である。
+このガイドでは、JavaScript の Web アプリにメモリの問題のプロファイリングについてウォークスルーします。
+ツールがどのように実際上作動するかのあなたの意識を改善するために、特徴に関して学習する場合、必ず <a href="https://developers.google.com/chrome-developer-tools/docs/javascript-memory-profiling#supporting_demos">supporting demos</a> を試してみてください。
+</p>
+
+<p>
+この文書で使用されている用語に慣れるために Memory 101 ( <a href="https://developers.google.com/chrome-developer-tools/docs/memory-analysis-101">Memory Analysis 101 - Chrome DevTools — Google Developers</a> ) ページをお読みください。
+</p>
+
+<p>
+注：我々が使用するこれらの機能のいくつかは、現在、Chrome Canary のみ利用可能です。
+    アプリケーションのための最高のメモリのプロファイリング·ツールを取得するには、このバージョンを使用することをお勧めします。
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> 自身に尋ねる質問 (自問する質問)  Questions to ask yourself</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+一般に、メモリーリークを持っていると思う場合、答えることになるだろう 3 つの疑問がある :
+</p>
+
+<ul class="org-ul">
+<li>私のページはあまりにも多くのメモリを使用していますか？
+
+<p>
+<a href="https://developers.google.com/chrome-developer-tools/docs/javascript-memory-profiling#heading=h.3gfl4k8caz0k">Timeline memory view</a> (Timeline メモリビュー) および Chrome task manager (Chrome タスクマネージャー) は、
+あまりにも多くのメモリを使用していれば、あなたが特定するのに役立ちます。
+メモリビューは、レンダリングする検査過程でのライブ DOM ノード、文書やJSのイベント·リスナーの数を追跡することができます。
+メモリビューは、検査されたレンダリングプロセスの中の、実際の DOM ノード、ドキュメントおよび JS イベントリスナーの数を追跡することができます。
+</p>
+
+<p>
+経験則として:
+もはや使用する必要のない DOM 要素への参照を保持しないようにして、
+無用のイベントリスナーをアンバインドして、
+使用するつもりでない (日付 -&gt; date ではなくて data かも???) の大きな塊を格納する場合、気を付けてください。
+</p>
+</li>
+
+<li>私のページはメモリーリークがないか？
+
+<p>
+<a href="https://developers.google.com/chrome-developer-tools/docs/javascript-memory-profiling#object_allocation_tracker">Object allocation tracker</a> (オブジェクト割り当てトラッカー) を使用すると、リアルタイムでのJSオブジェクトの割り当てを見て、リークを絞り込むことができます。
+さらに、JS ヒープスナップショットをとり、メモリ・グラフを分析し、
+どのオブジェクトがガベージ・コレクションによって清掃されていないか発見するスナップショットを比較するために <a href="https://developers.google.com/chrome-developer-tools/docs/javascript-memory-profiling#heading=h.g0yxr1o33gky">heap profiler</a> を使用することができます。
+</p>
+</li>
+
+<li>私のページは、どれくらい頻繁にガベージ・コレクションを強要していますか？
+
+<p>
+頻繁 (frequently) GCing している場合は、あまりにも頻繁に割り当てることができる。
+Timeline メモリビューでは、興味のあるポーズを特定するのに役立ちます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_0.png" alt="image_0.png" />
+</p>
+</div>
+</li>
+</ul>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> 用語や基礎  Terminology and Fundamentals</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+このセクションでは、memory analysis (メモリ分析) で使用される一般的な用語を説明し、異なる言語のためのメモリプロファイリングツールの様々に適用可能である。
+ここで記述された用語と概念は、ヒープ・プロフィーラー UI および対応するドキュメンテーションの中で使用されます。
+</p>
+
+<p>
+それは、ツールを有効に使用するためにこれらに精通するのを支援します。
+あなたがこれまでの Java、 .NET、またはいくつかの他のメモリプロファイラのどちらかを使ってきた場合、これ以降には補習になってしまう内容があります。
+</p>
+</div>
+
+<div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> オブジェクトサイズ  Object sizes</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<p>
+メモリを原始的 (primitive) なタイプ (数とストリングのような) および オブジェクト (連想配列) を備えたグラフと見なしてください。
+それは、相互接続されたポイントを備えたグラフとして視覚的に以下のように表わされるかもしれません :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/thinkgraph.png" alt="thinkgraph.png" />
+</p>
+</div>
+
+
+<p>
+オブジェクトは、次の 2 つの方法でメモリを保持することができます :
+</p>
+
+<ul class="org-ul">
+<li>オブジェクト自体によって直接
+</li>
+<li>他のオブジェクトへの参照を保持し、それらのオブジェクトが ガベージコレクタ (略してGC) によって自動的に配置されるのを防ぐ (したがって) ことにより暗黙に。
+</li>
+</ul>
+
+
+<p>
+DevTools (「Profiles」の下で見つかったメモリ問題を調査するためのツール ) の中の Heap Profiler が働く時、
+恐らくあなた自身が情報の少数の異なるカラムを見ているのを見つけるでしょう。
+2つ、それは目立つ、Shallow Size (浅いサイズ) および Retained Size (保持されたサイズ) はありますか。しかし、これらは何を表わすでしょう？
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_1.png" alt="image_1.png" />
+</p>
+</div>
+</div>
+
+
+<ol class="org-ol"><li>浅いサイズ  Shallow size<br  /><div class="outline-text-5" id="text-1-2-1-1">
+<p>
+これはオブジェクト自体によって保持されるメモリのサイズです。
+</p>
+
+<p>
+典型的な JavaScript オブジェクトは、それらの記述 (説明) および即時の値の格納のためにいくつかのメモリを確保しておきます。
+通常、配列および文字列だけが重要な shallow サイズを持つことができます。
+しかしながら、文字列および外部配列は、
+JavaScript heep の上の小さな ラッパーオブジェクトだけを公開して、レンダラメモリでのそれらの主記憶装置をしばしば持っています。
+</p>
+
+<p>
+検査された (inspected) ページが与えられる場合、レンダラメモリ (Renderer memory) はすべてプロセスのメモリである :
+ネイティブ·メモリー +  ページの JS ヒープメモリ + ページ単位で始められたすべての専用の (dedicated) ワーカーのJSヒープメモリ
+しかしながら、小さなオブジェクトさえ、他のオブジェクトが自動的なガベージ・コレクション・プロセスによって処分されるのを防ぐことにより、
+間接的に大量のメモリを保持することができます。
+</p>
+</div>
+</li>
+<li>保持されたサイズ  Retained size<br  /><div class="outline-text-5" id="text-1-2-1-2">
+<p>
+これは、一旦オブジェクトがそれ自身 GC roots (GC のルート) から到達不能に (手が届かなく) なったその依存 (dependent) オブジェクトと共に削除されれば、
+解放されるメモリのサイズです。
+</p>
+
+<p>
+GC roots (GCのルート) は、V8 の外側のネイティブコードから JavaScript オブジェクトまで参照する場合、
+作成される (ローカルまたはグローバルのどちらか) ハンドルから構成されます。
+そのようなハンドルはすべて、GC roots &gt; Handle scope と GC roots &gt; Global handles 下のヒープスナップショット内に見つけることができる。
+このドキュメンテーションにブラウザの実装の詳細に飛び込まずに、ハンドルについて記述することは混乱させるかもしれません。
+GCのルートおよびハンドルの両方は心配する必要のあるものではありません。
+</p>
+
+<p>
+大部分がユーザにとって面白くない、多くの内部 GC のルートがあります。
+アプリケーションの観点から見ると、次の種類のルートがあります :
+</p>
+
+<ul class="org-ul">
+<li>(各 iframe 内の) ウィンドウグローバルオブジェクト。
+ヒープスナップショットにウィンドウからの最短保持パス上のプロパティ参照の数である距離 (distance) フィールドがある。
+</li>
+
+<li>ドキュメントの横断により到達可能なすべてのネイティブの DOM ノードから成るドキュメントの DOM ツリー。
+それらのすべてには JS ラッパーがあるとは限らないかもしれません、しかし、それらが持っていれば、ラッパーは生きているでしょう。その一方でドキュメントは生きています。
+</li>
+
+<li>時々、オブジェクトはデバッガ・コンテキストおよび DevTools コンソール (例えばコンソール評価の後の) によって保持されるかもしれません。
+</li>
+</ul>
+
+<hr  />
+<p>
+注 :
+私たちは、明瞭なコンソールおよびデバッガ中の非アクティブ (無活発) なブレークポイントをスナップショットに積み上げるようにユーザに勧めます。
+</p>
+<hr  />
+
+<p>
+メモリ・グラフはルートで始まります。それは、ブラウザの window オブジェクトあるいは Node.js モジュールの Global オブジェクトかもしれません。
+このルートオブジェクトがどのようにGC'dかコントロールしません。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/dontcontrol.png" alt="dontcontrol.png" />
+</p>
+</div>
+
+
+<p>
+ルートから到達できないものは何でも、GCを取得。
+</p>
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> Object's Retaining Tree  オブジェクトのリテーニング (保持) ツリー</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<p>
+私たちが以前に紹介したように、ヒープは相互接続された (interconnected) オブジェクトのネットワークです。
+数学的な世界では、この構造はグラフまたはメモリのグラフと呼ばれます。
+グラフは端 (エッジ) によって接続しているノードで構成 (構築) されます。それらの両方はラベルを与えられています。
+</p>
+
+<ul class="org-ul">
+<li>Nodes (or objects) は、それらを構築するために使用されたコンストラクタ関数名を用いて標識される
+</li>
+<li>Edges は、プロパティの名前を用いて標識される。
+</li>
+</ul>
+
+<p>
+このガイドでは、ヒーププロファイラを使用してプロファイルを記録する方法を学習します。
+我々は以下のヒーププロファイラ記録 (recording) で見ることができる目立つもののうちいくつかは、距離を含んでいます。 :
+GC のルートからの距離。
+同じタイプのほとんどすべてのオブジェクトが同じ距離にあり、少数がより大きな距離にある場合、それは調査する価値があるものです。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_2.png" alt="image_2.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> Dominators  ドミネータ, 支配者</h4>
+<div class="outline-text-4" id="text-1-2-3">
+<p>
+各オブジェクトは、正確に一つの支配者を有するので、支配オブジェクトは、ツリー構造で構成されてます。
+オブジェクトの支配者は、それが支配するオブジェクトへの直接参照が不足していることがあります。すなわち、ドミネータ (支配者) ツリーはグラフのスパニングツリーではありません。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/dominatorsspanning.png" alt="dominatorsspanning.png" />
+</p>
+</div>
+
+
+<p>
+上図 (In the diagram above) :
+</p>
+
+<ul class="org-ul">
+<li>ノード 1 は、ノード 2 を支配
+</li>
+<li>ノード 2 は、ノード 3, 4, 6 を支配
+</li>
+<li>ノード 3 は、ノード 5 を支配
+</li>
+<li>ノード 5 は、ノード 8 を支配
+</li>
+<li>ノード 6 は、ノード 7 を支配
+</li>
+</ul>
+
+<p>
+下記の例において、ノード #3 は #10 の支配者である。しかし、#7 はさらに GC から #10 まですべての単純なパスの中で存在する。
+したがって、object B がルートから object A まですべての単純なパスの中で存在する場合、 B は A の支配者である。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/dominators.gif" alt="dominators.gif" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2-4" class="outline-4">
+<h4 id="sec-1-2-4"><span class="section-number-4">1.2.4</span> V8 Specifics  V8 の詳細</h4>
+<div class="outline-text-4" id="text-1-2-4">
+<p>
+このセクションでは、私たちは、特に V8 JavaScript virtual machine (V8 VM あるいは VM) に相当するいくつかのメモリ関連のトピックについて記述します。
+メモリのプロファイリング (輪郭を書く) するとき、なぜヒープスナップショットがこの方法を見るか理解することは有用です。
+</p>
+</div>
+
+<ol class="org-ol"><li>JavaScript Object Representation  JavaScript のオブジェクトの表記<br  /><div class="outline-text-5" id="text-1-2-4-1">
+<p>
+3 つのプリミティブ (原始) のタイプがあります。 :
+</p>
+
+<ul class="org-ul">
+<li>Numbers 数字 (e.g3.14159&#x2026;)
+</li>
+<li>Booleans ブール (true または false)
+</li>
+<li>Strings 文字列 (e.g 'Werner Heisenberg')
+</li>
+</ul>
+
+<p>
+彼らは、他の値を参照することはできず、常に葉または終端ノードです。
+</p>
+</div>
+
+
+<ol class="org-ol"><li>Numbers<br  /><div class="outline-text-6" id="text-1-2-4-1-1">
+<p>
+数値はどちらかとして格納することができます :
+</p>
+
+<ul class="org-ul">
+<li>即時 31 ビット整数は、小さな整数（SMIの）と呼ばれる値、または
+</li>
+<li>ヒープ番号と呼ばれた、ヒープオブジェクト
+</li>
+</ul>
+
+<p>
+値は、それにプロパティを設定するように、ボックス化する必要がある場合にヒープ番号は、 ???
+例えばダブルスとしてSMI形に適合しない値を格納するために使用される、またはされている。 ???
+</p>
+</div>
+</li>
+<li>Strings<br  /><div class="outline-text-6" id="text-1-2-4-1-2">
+<p>
+文字列はどちらかに格納することができます :
+</p>
+
+<ul class="org-ul">
+<li>VM のヒープ、または
+</li>
+<li>外部的な renderer’s memory (レンダラのメモリ) に。
+ラッパーオブジェクト (wrapper object) が作成され、たとえば、Web から受信されたスクリプトのソース、およびその他のコンテンツが格納されているのではなく、
+VM ヒープにコピーし、外部記憶装置にアクセスするために使用される。
+</li>
+</ul>
+
+<p>
+新しい JavaScript オブジェクトのためのメモリは、専用の JavaScript のヒープ (または VM ヒープ) から割り当てられます。
+これらのオブジェクトは V8 のガベージコレクターによって管理され、それらへの少なくとも 1 つの強い参照がある限り、したがって、生き続ける (stay alive) でしょう。
+</p>
+</div>
+</li>
+<li>Native objects  ネイティブオブジェクト<br  /><div class="outline-text-6" id="text-1-2-4-1-3">
+<p>
+ネイティブオブジェクトは、JavaScript のヒープにない他のものすべてです。
+ネイティブオブジェクトは、それが生涯の全体 (throughout) であるヒープオブジェクトとは対照的で、
+V8 ガベージコレクタによって管理されておらず、JavaScript ラッパーオブジェクトを使用する JavaScript からのみアクセスすることができます。
+</p>
+</div>
+</li>
+<li>Cons string 定数 ???<br  /><div class="outline-text-6" id="text-1-2-4-1-4">
+<p>
+定数 (???) は、連結されて、そのとき格納された文字列のペアで構成され、連結の結果であるオブジェクトです。
+Cons string の内容の結合が必要な場合にのみ発生します。
+結合した文字列の部分文字列を構築する必要がある場合の例は次のようになります。 ???
+</p>
+
+<p>
+例えば、連結すれば、a そして b、連結の結果を表わすストリング (a, b) を得ます。
+その後その結果と d を連結したならば、別の cons string ((a, b), d) を得ます。
+</p>
+</div>
+</li>
+<li>Arrays 配列<br  /><div class="outline-text-6" id="text-1-2-4-1-5">
+<p>
+配列は、数字キーを備えたオブジェクトです。
+それらは、大量のデータの格納のために V8 VM の中で広範囲に使用されます。
+辞書のように使用されるキーと値のペアのセットは配列によってバックアップされます。
+</p>
+
+<p>
+典型的な JavaScript オブジェクトを格納するために使用される 2 つの配列型のいずれかになります。 :
+</p>
+
+<ul class="org-ul">
+<li>命名されたプロパティ、および
+</li>
+<li>数値要素 (numeric elements)
+</li>
+</ul>
+
+<p>
+プロパティが非常に数が少ない場合には、それらは、JavaScript オブジェクト自体に内部的に格納することができる。
+</p>
+</div>
+</li>
+<li>Map<br  /><div class="outline-text-6" id="text-1-2-4-1-6">
+<p>
+オブジェクトとそのレイアウトの種類について記述するオブジェクト。
+例えば、マップは、高速にプロパティにアクセス ( <a href="https://developers.google.com/v8/design#prop_access">fast property access</a> ) するための暗黙的オブジェクト階層を記述するために使用される。
+</p>
+</div>
+</li></ol>
+</li>
+<li>Object Groups  オブジェクトグループ<br  /><div class="outline-text-5" id="text-1-2-4-2">
+<p>
+各ネイティブオブジェクトグループはお互いに相互参照を保持するオブジェクトから構成されています。
+このように接続されたグラフを形成し、例えば、すべてのノードがその親と次の子と次の兄弟へのリンクへのリンクを持つ DOM サブツリーを考えてみましょう。
+ネイティブオブジェクトは、JavaScript のヒープに示されていないことに注意してください - 彼らはゼロサイズを持っている理由です。
+その代わりに、ラッパーオブジェクトが作成されます。
+</p>
+
+<p>
+各ラッパーオブジェクトは、それにコマンドをリダイレクトするため、対応するネイティブオブジェクトへの参照を保持します。
+自身のターンでは、オブジェクトグループは、ラッパーオブジェクトを保持する。
+しかしながら、GC はそのラッパーもはや参照されないオブジェクトグループを解放するのに十分スマートなように、これは回収不能のサイクルを作成しません。
+しかし、単一のラッパーを解放するのを忘れることは、グループ全体、及び、関連するラッパーを保持するでしょう。
+</p>
+</div>
+</li></ol>
+</div>
+</div>
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Prerequisites and helpful tips  前提条件と役立つヒント</h3>
+<div class="outline-text-3" id="text-1-3">
+</div><div id="outline-container-sec-1-3-1" class="outline-4">
+<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> Chrome Task Manager  Chrome タスクマネージャ</h4>
+<div class="outline-text-4" id="text-1-3-1">
+<p>
+注： Chrome でメモリの問題をプロファイリングするときは、クリーンルームのテスト環境 (<a href="https://developers.google.com/chrome-developer-tools/docs/clean-testing-environment">clean-room testing environment</a>) をセットアップすることをお勧めします。
+</p>
+
+<p>
+Chrome タスクマネージャーを使用すると、これを起こらせているかもしれないアクションを行なう間にメモリカラムをモニターすることにより、
+ページが多くのメモリを消費しているかどうか速く確かめることができる。
+タスクマネージャは、[Chrome メニュー] &gt; [ツール] から、あるいは、 [Shift + Esc] キーを押してアクセスされます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_5.png" alt="image_5.png" />
+</p>
+</div>
+
+<hr  />
+<p>
+図注釈 :
+A simple app, but it's using a lot more memory than expected. This might prompt further invesigation.
+シンプルなアプリですが、予想よりはるかに多くのメモリを使用しています。これはさらなる調査を要求される場合があります。
+</p>
+<hr  />
+
+<p>
+オープン後は、列の見出し領域を右クリックして、JavaScriptのメモリ列を有効にしてください。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-3-2" class="outline-4">
+<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> Identifying a Memory Problem with the DevTools Timeline  DevTools タイムラインとメモリの問題の識別</h4>
+<div class="outline-text-4" id="text-1-3-2">
+<p>
+パフォーマンスの問題を解決する最初のステップは、問題が存在することの証明を示す能力を持っていることです。
+これは問題のベースライン測定を行うために使用することができる再現可能なテストを作成することができることを意味する。
+再現性のあるプログラムがなければ、確実に問題を測定することはできません。
+さらに、基線測定なしでは、作られたどんな変更もパフォーマンスを改善していることを知る方法はありません。
+</p>
+
+<p>
+Timeline パネルは、問題がいつ存在するか決定するのに役立ちます。
+それは、あなたの Web アプリケーションかページでロードし対話する場合、時間がどこで費やされるかの完全な概要を提示します。
+すべてのイベント、
+リソースのロードから JavaScript の構文解析まで、
+スタイルの算出、
+ガベージコレクションによる休止、
+再描画が、タイムライン上にプロットされています。
+</p>
+
+<p>
+メモリの問題を確認する場合は、タイムラインパネルの Memory view (メモリビュー) は、追跡のために使用することができます :
+</p>
+
+<ul class="org-ul">
+<li>総割り当てられたメモリを - メモリ使用量が増加している？
+</li>
+<li>DOM ノードの数
+</li>
+<li>ドキュメントの数と
+</li>
+<li>イベントリスナーの数が割り当てられた (allocated) 。
+</li>
+</ul>
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_6.png" alt="image_6.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+あなたのメモリプロファイリングセッション中にリークを引き起こしている可能性のある問題を特定する方法の詳細を読むには、
+<a href="http://coding.smashingmagazine.com/2012/06/12/javascript-profiling-chrome-developer-tools/">Memory profiling with the Chrome DevTools</a> by Zack Grossbart を参照
+</p>
+<hr  />
+</div>
+</div>
+<div id="outline-container-sec-1-3-3" class="outline-4">
+<h4 id="sec-1-3-3"><span class="section-number-4">1.3.3</span> Proving a Problem Exists  問題の存在の証明</h4>
+<div class="outline-text-4" id="text-1-3-3">
+<p>
+最初にすることはメモリをリークしている疑いがある (suspect) アクションのシーケンスを識別することです。
+これは、サイトをナビゲート, ホバーする, クリックする、
+より多くのパフォーマンスにマイナスな時間に渡って影響を与えているように見える方法で
+そうでなければなんとかしてページと対話することからの何でもでありえます。
+</p>
+
+<p>
+Timeline パネル上 ( [Ctrl + E] または [Cmd + E] ) で記録を開始し、テストする一連の (sequence) アクションを実行します。
+十分なガベージコレクションを強制するには、下部のゴミ箱アイコン (trash icon) をクリックしてください。
+</p>
+
+<p>
+以下に、私たちはメモリーリーク・パターンを見ます。なおここで、いくつかのノードは集められていません :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/nodescollected.png" alt="nodescollected.png" />
+</p>
+</div>
+
+
+<p>
+数回の反復した後に、(上部の memory pane (メモリペイン) で) ノコギリ形のグラフが表示された場合は、
+すぐに住んでいたオブジェクト (shortly lived objects) の多くを割り当てている (allocating) 。
+アクションのシーケンス(一連のアクション)が、任意の保持されたメモリに帰着するとは予想されず、
+あなたが始めたところで、DOM ノードカウントがベースラインまで低下しない場合、漏れ (leak) があるのではないかと疑問に思う十分な理由があります。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_10.png" alt="image_10.png" />
+</p>
+</div>
+
+
+<p>
+一旦その問題が存在することを確認したならば、Profiles パネル上でヒーププロフィーラーを使用して、その問題の原因を特定する助けを得ることができます。
+</p>
+
+<hr  />
+<p>
+例： あなたが効果的に Timeline メモリモードの使用方法を練習することができ、 <a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example1">memory growth</a> (E 1) (メモリの増加)のこの例を試してみてください。
+</p>
+<hr  />
+</div>
+</div>
+<div id="outline-container-sec-1-3-4" class="outline-4">
+<h4 id="sec-1-3-4"><span class="section-number-4">1.3.4</span> Garbage Collection  ガーベジコレクション</h4>
+<div class="outline-text-4" id="text-1-3-4">
+<p>
+garbage collector ガベージコレクタ (V8 の中のもののような) は、実際のあなたの適用でのオブジェクトを見つけることができる必要がある、と同様に、死んでいる (ごみ) と考えられ、unreachable (到達不能) なもの。
+</p>
+
+<p>
+garbage collection ガベージコレクション (GC) があなたの JavaScript 中の論理エラーにより、どんな死んでいるオブジェクトも逃す場合、
+これらのオブジェクトによって消費するメモリは取り戻すことができません (再利用することができません) 。
+このような状況は、時間の経過とともに、アプリケーションを遅くしてしまいます。
+</p>
+
+<p>
+必要としない変数、および、イベントリスナーがあるコードによってまだ参照されているような方法で、あなたがコードを書いた場合、これはしばしば起こります。
+これらの参照を維持したままでは、オブジェクトが正しく、GC によってクリーンアップすることができません。
+</p>
+
+<p>
+あなたのアプリのライフサイクル中に更新されているかもしれない/破壊された DOM 要素への参照を含んでいる変数を、忘れずにチェックし無効にします。
+他のオブジェクト (あるいは他の DOM 要素) を参照できるオブジェクトのプロパティをチェックしてください。
+時間の経過とともに蓄積する可能性がある可変のキャッシュから必ず目を離さないでください。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Heap Profiler  ヒーププロファイラ</h3>
+<div class="outline-text-3" id="text-1-4">
+</div><div id="outline-container-sec-1-4-1" class="outline-4">
+<h4 id="sec-1-4-1"><span class="section-number-4">1.4.1</span> Taking a snapshot  スナップショットを作成</h4>
+<div class="outline-text-4" id="text-1-4-1">
+<p>
+Profiles パネルで、Take Heap Snapshot (ヒープのスナップショットを取る) を選択し、
+[Start (開始)]を押すか、 [Cmd + E] または [Ctrl + E] をクリックします。 :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_11.png" alt="image_11.png" />
+</p>
+</div>
+
+
+<p>
+スナップショットは、レンダラープロセスメモリ に最初に格納されます。
+あなたがそれを表示するのにスナップショットのアイコンをクリックすると、それらはオンデマンドで DevTools に転送されます。
+スナップショットが DevTools にロードされ、解析された後、スナップショットのタイトルの下に数が現われて、
+到達可能な (<a href="https://developers.google.com/chrome-developer-tools/docs/memory-analysis-101#retaining_paths">reachable</a>) JavaScript オブジェクトのサイズの合計を示します :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_12.png" alt="image_12.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例: <a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example2">garbage collection in action</a> (E 2) (アクションでのガベージコレクション) のこの例を試してみて、タイムラインでのメモリ使用量を監視します。
+</p>
+<hr  />
+</div>
+</div>
+<div id="outline-container-sec-1-4-2" class="outline-4">
+<h4 id="sec-1-4-2"><span class="section-number-4">1.4.2</span> Clearing snapshots  スナップショットをクリア</h4>
+<div class="outline-text-4" id="text-1-4-2">
+<p>
+スナップ写真は (DevTools とレンダラメモリの両方から) Clear all profiles アイコン (禁止マークのようなアイコン) を押すことにより削除することができます :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_15.png" alt="image_15.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+注意： DevTools ウィンドウを閉じても、レンダラメモリから収集されたプロファイルを削除しません。
+       DevToolsを再開すると、すべての以前に記録したスナップショットは、スナップショットのリストに再表示されます。
+</p>
+<hr  />
+
+<p>
+我々は以前に、あなたのスナップショットワークフローの一部として DevTools から、GC を強制することができます述べたことを思い出してください。
+ヒープスナップショットを作成すると、それは自動的に強制されます。
+Timeline では、ごみ箱 (ごみの収集) ボタンをクリックすることにより、GC を強制することは非常に便利かもしれません。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/force.png" alt="force.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例:
+<a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example3">scattered objects</a> (E 3) (散在したオブジェクト) のこの例を試みて、ヒーププロフィーラーを使用して、それをプロファイリングしてください。
+多くのアイテム (オブジェクト) の割付けが表示されるはずです。
+</p>
+<hr  />
+</div>
+</div>
+<div id="outline-container-sec-1-4-3" class="outline-4">
+<h4 id="sec-1-4-3"><span class="section-number-4">1.4.3</span> Switching between snapshot views  スナップショットビューを切り替える</h4>
+<div class="outline-text-4" id="text-1-4-3">
+<p>
+スナップショットは、異なるタスクのために別の観点から見ることができます。
+ビュー間で切り替えるためには、ビューの下部のセレクターを使用してください :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_17.png" alt="image_17.png" />
+</p>
+</div>
+
+
+<p>
+3 つのデフォルトのビューがあります :
+</p>
+
+<ul class="org-ul">
+<li>Summary 概要 - コンストラクタ名でグループ化されたオブジェクトを示しています。
+</li>
+<li>Comparison 比較 - 2スナップショット間の差分を表示します。
+</li>
+<li>Containment 封じ込め - ヒープの内容の調査を可能にします。
+</li>
+</ul>
+
+<p>
+Dominators ビュー、
+[Settings (設定)] パネルで有効にすることができる
+&#x2013; <a href="https://developers.google.com/chrome-developer-tools/docs/memory-analysis-101#dominators">dominators tree</a> を示します。
+   蓄積 (accumulation) ポイントを見つけるのに役立ちます。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-4-4" class="outline-4">
+<h4 id="sec-1-4-4"><span class="section-number-4">1.4.4</span> Looking up color coding  カラーコードを調べる</h4>
+<div class="outline-text-4" id="text-1-4-4">
+<p>
+オブジェクトのプロパティおよびプロパティの値は、異なるタイプを持っており、それに応じて着色されている。
+各プロパティは、4 つのタイプのいずれかになります :
+</p>
+
+<ul class="org-ul">
+<li>a: property — 名前を持つ規則的 (regular) プロパティー、. (ドット) 演算子、または [] (大カッコ) 表記を介してアクセス可能。e.g. ["foo bar"];
+</li>
+<li>0: element — 数値インデックスとの 正規 (regular) なプロパティー、[]（大カッコ）表記を介してアクセス可能。
+</li>
+<li>a: context var — 関数コンテキスト内の変数、 関数クロージャ内からその名前でアクセス可能。
+</li>
+<li>a: system prop — JavaScript の VM によって追加されたプロパティ、JavaScript コードからのアクセス不可。
+</li>
+</ul>
+
+<p>
+System として指定されたオブジェクトには対応する JavaScript のタイプ (型) を持っていません。
+それらは、JavaScript の VM のオブジェクトシステム実装 (implementation) の一部である。
+V8 は、ユーザの JS オブジェクトと同じヒープ内のほとんどのその内部オブジェクトを割り付けます。
+したがって、これらは単に V8 内部です。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-5" class="outline-3">
+<h3 id="sec-1-5"><span class="section-number-3">1.5</span> Views in detail  ビューの詳細</h3>
+<div class="outline-text-3" id="text-1-5">
+</div><div id="outline-container-sec-1-5-1" class="outline-4">
+<h4 id="sec-1-5-1"><span class="section-number-4">1.5.1</span> Summary view  概要ビュー</h4>
+<div class="outline-text-4" id="text-1-5-1">
+<p>
+最初に、スナップショットはオブジェクトの合計を表示する、概要 (Summary) ビューで開く。それは実例 (instances) を示すために拡張することができる :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_19.png" alt="image_19.png" />
+</p>
+</div>
+
+
+<p>
+トップレベルのエントリーはラインの「合計 (総数) 」です。
+それらは次のものを表示します :
+</p>
+
+<ul class="org-ul">
+<li>Constructor represents 「コンストラクタを表す」は、このコンストラクタを使用して作成されたすべてのオブジェクトを表します
+</li>
+<li>number of object instances 「オブジェクトインスタンスの数」は、＃列に表示されます
+</li>
+<li>Shallow size 「シャローサイズ」欄には、特定のコンストラクタ関数によって作成されたすべてのオブジェクトのシャローサイズの合計を表示します
+</li>
+<li>Retained size 「保持サイズ」欄には、オブジェクトの同じセットの中で最大保持サイズが表示されます
+</li>
+<li>Distance 「距離」は、ノードの最短の単純なパスを使用して、ルートまでの距離を表示します。
+</li>
+</ul>
+
+<p>
+上図では、全行を展開した後、そのすべてのインスタンスが表示されます。
+インスタンスごとの、シャローおよび保持サイズは、対応する列に表示されます。
+@ 文字の後の数字は、オブジェクトの一意の ID である、
+あなたはオブジェクトごとにヒープスナップショットを比較することができます。
+</p>
+
+<hr  />
+<p>
+例：サマリビューの使用方法を理解するには、この <a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-summary">demo page</a> （新規タブで開きます）をお試しください。
+</p>
+<hr  />
+
+<p>
+黄色のオブジェクトが、それらの上に JavaScript 参照を持ち、 ???
+赤色オブジェクトが、黄色の背景に 1 から参照されているノードを分離することを覚えておいてください。 ???
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-5-2" class="outline-4">
+<h4 id="sec-1-5-2"><span class="section-number-4">1.5.2</span> Comparison view  比較ビュー</h4>
+<div class="outline-text-4" id="text-1-5-2">
+<p>
+このビューは、その差が漏洩したオブジェクトを見つけるためにあるものを見ることができるように、
+複数のスナップショットを互いと比較するために使用される。
+特定のアプリケーションの動作が (例えば、文書を開きそれを閉じるなどのように、通常ペアになる直接的かつ逆の操作などで任意のゴミを残してはいけません)
+リークを作ることがないことを確認するには、以下のシナリオに従うことができる。 :
+</p>
+
+<ol class="org-ol">
+<li>操作を実行する前に、ヒープのスナップショットを取る。
+</li>
+<li>操作を実行する (あなたがリークの原因であると考えているいくつかの方法でページを操作);
+</li>
+<li>逆の操作を実行する (反対の相互作用をして、それを数回繰り返す);
+</li>
+<li>2 番目のヒープのスナップショットを取り、この表示を [Comparison (比較) ] に変更、スナップショット 1 と比較する。
+</li>
+</ol>
+
+<p>
+Comparison (比較) ビューでは、2 枚のスナップショット間の差が表示されます。
+総エントリを拡張する場合は、追加され、削除されたオブジェクトインスタンスが示されています。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_21.png" alt="image_21.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例：リークを検出するためのスナップショット比較を使用する方法のアイデアを得るために、この <a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-comparison">demo page</a> (新規タブで開きます) をお試しください。
+</p>
+<hr  />
+</div>
+</div>
+<div id="outline-container-sec-1-5-3" class="outline-4">
+<h4 id="sec-1-5-3"><span class="section-number-4">1.5.3</span> Containment view  封じ込めビュー</h4>
+<div class="outline-text-4" id="text-1-5-3">
+<p>
+封じ込めビューは、基本的にアプリケーションのオブジェクト構造の「鳥瞰図」である。
+それはあなたが一緒にあなたの JavaScript オブジェクトを構成している VM の内部オブジェクトを観察するために、
+関数クロージャーの内側に覗くようにし、アプリケーションが非常に低いレベルで使用するメモリ量を理解することができます。
+</p>
+
+<p>
+ビューは、複数のエントリポイントを提供します。 :
+</p>
+
+<ul class="org-ul">
+<li>DOMWindow objects &#x2013; これらは、JavaScript コードのための「グローバル」オブジェクトとみなすオブジェクトです。
+</li>
+<li>GC roots — VMのガベージコレクタによって使用される実際のGCのルート;
+</li>
+<li>Native objects — 自動化を可能にするために JavaScript の仮想マシン内で「プッシュ」されているブラウザのオブジェクト、
+例えば DOM ノード、CSS ルール（詳細は次のセクションを参照してください。）
+</li>
+</ul>
+
+<p>
+下記は占められた (populated) Containment (封じ込め) ビューの例です :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_22.png" alt="image_22.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例：ビューを使用して閉鎖やイベントハンドラを探索する方法を見つけるためにこの <a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-containment">demo page</a> （新規タブで開きます）をお試しください。
+</p>
+<hr  />
+</div>
+
+<ol class="org-ol"><li>A tip about closures  クロージャーに関するヒント<br  /><div class="outline-text-5" id="text-1-5-3-1">
+<p>
+それは、あなたが容易にスナップショット中のクロージャを識別することができるように、関数を指定するのを非常に支援する。
+たとえば、この例では、名前付き関数を使用していません。 :
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-javascript">function createLargeClosure() {
+  var largeStr = new Array(1000000).join('x');
+
+  var lC = function() { // this is NOT a named function
+    return largeStr;
+  };
+
+  return lC;
+}
+</pre>
+</div>
+
+<p>
+一方、この例は行う :
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-javascript">function createLargeClosure() {
+  var largeStr = new Array(1000000).join('x');
+
+  var lC = function lC() { // this IS a named function
+    return largeStr;
+  };
+
+  return lC;
+}
+</pre>
+</div>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/domleaks.png" alt="domleaks.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例: なぜ eval がメモリへのクロージャの影響を分析するのに有害か <a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example7">why eval is evil</a> (E 7)、この例を試みてください。
+    さらに、 <a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example8">heap allocations</a> (E 8) (ヒープ割付け) の記録に介して表示されるこの例でフォローアップに興味を持っているかもしれません。
+</p>
+<hr  />
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-1-5-4" class="outline-4">
+<h4 id="sec-1-5-4"><span class="section-number-4">1.5.4</span> Uncovering DOM leaks  DOMリークを暴く</h4>
+<div class="outline-text-4" id="text-1-5-4">
+<p>
+ツールのユニークな機能は、
+ブラウザのネイティブオブジェクト (DOMノード、CSSルール) と、JavaScriptオブジェクト間の双方向の依存関係を反映することです。
+これは、まわりに浮かぶ、忘れられた離れている (デタッチド, detached) DOM サブツリーにより何か起こりそうで目に見えないリークを発見するのに役立ちます。
+</p>
+
+<p>
+DOM リークはあなたが思うよりも大きくなることがあります。
+次のサンプルを考慮してください。 &#x2013;  #tree はいつ GC されるか？
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-javascript">var select = document.querySelector;
+var treeRef = select("#tree");
+var leafRef = select("#leaf");
+var body = select("body");
+
+body.removeChild(treeRef);
+
+//#tree can't be GC yet due to treeRef
+treeRef = null;
+
+//#tree can't be GC yet due to indirect
+//reference from leafRef
+
+leafRef = null;
+//#NOW can be #tree GC
+</pre>
+</div>
+
+<p>
+#leaf は、に、それの親 (parentNode) で、そしてまた #tree まで再帰的に、参照を維持します、
+そのため、leafRef が無効にされる場合に限り、 #tree の下のツリー "全体" が GC に対する候補になる。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/treegc.png" alt="treegc.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例: DOM ノードがどこに漏れる場合があるか理解する、<a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example6">leaking DOM nodes</a> (E 6) それらを検知する方法をこの例を試みてください。
+    <a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example9">DOM leaks being bigger than expected</a> (E 9) 予想以上に大きい DOM 漏れのこの例をさらに見ることにより、それをフォローアップすることができます。
+</p>
+<hr  />
+
+<hr  />
+<p>
+参照:
+詳細情報は、DOMリークやメモリ解析の基礎のチェックアウト詳細情報は、
+<a href="http://slid.es/gruizdevilla/memory">Finding and debugging memory leaks with the Chrome DevTools</a> by Gonzalo Ruiz de Villa.
+</p>
+<hr  />
+
+<p>
+ネイティブオブジェクトは、概要 (Summary) と封じ込め (Containment) ビューから最も簡単にアクセスできます - 専用のエントリーノードが彼らのためにあります。 :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_24.png" alt="image_24.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例: 独立した DOM ツリーを再生するには、このデモ <a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-dom-leaks">Uncovering DOM Leaks</a>  (新しいタブで開きます) をお試しください。
+</p>
+<hr  />
+</div>
+</div>
+<div id="outline-container-sec-1-5-5" class="outline-4">
+<h4 id="sec-1-5-5"><span class="section-number-4">1.5.5</span> Dominators view  ドミネータ (支配者) ビュー</h4>
+<div class="outline-text-4" id="text-1-5-5">
+<p>
+ドミネータビューは、ヒープグラフのドミネータツリーを示しています。
+ドミネータビューは、Containment (包含) ビューに似ていますが、プロパティ名を欠いている。
+オブジェクトの支配は、それへの直接参照が不足している可能性があるためである、
+つまり、ドミネータ木は、グラフの全域木 (スパニングツリー, spanning tree) ではありません。
+しかし、すぐにメモリ蓄積ポイントを識別するために、私たちを助けるので、利益があります。
+</p>
+
+
+<hr  />
+<p>
+注意: Chrome Canary で、Dominators ビュー、 [設定] &gt; [Show advanced heap snapshot] のプロパティを有効にし、に移動し、
+      DevTools を再起動することで有効にすることができます。
+</p>
+<hr  />
+
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_25.png" alt="image_25.png" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例: 蓄積ポイントを見つけることを訓練するために、このデモ <a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-dominators">Finding Accumulation Points</a> （新しいタブで開きます）をしてみてください。
+    <a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example10">retaining paths and dominators</a> (E 10) パスとドミネータを保持に実行しているの、この例でそれをフォローアップ。
+</p>
+<hr  />
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-6" class="outline-3">
+<h3 id="sec-1-6"><span class="section-number-3">1.6</span> <b>Object allocation tracker</b>  オブジェクト割り当てのトラッカー (追跡者)</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+object tracker (オブジェクトトラッカー) は、インクリメント (増分) の更新および Timeline パネルのトラッキングと、ヒーププロフィーラー <a href="https://developers.google.com/chrome-developer-tools/docs/javascript-memory-profiling#heading=h.xfxcns9xlif4">heap profiler</a> の詳細なスナップショット情報を組み合わせる。
+これらのツールと同様に、トラッキング (追跡) オブジェクトのヒープ割り当ては、一連のアクションを実行して、記録を開始することを含む、その後、分析のために記録を停止する。
+</p>
+
+<p>
+オブジェクトトラッカーは、録音の終わりに録音 (50ms ごとと同じくらい頻繁に！) 、および、1 枚の最終スナップショットの全体にわたってヒープスナップショットを周期的 (定期的) にとります。
+ヒープ割り当てプロファイルは、オブジェクトがどこで作成されているか示し、保持するパスを識別します。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_26.png" alt="image_26.png" />
+</p>
+</div>
+</div>
+
+
+
+<div id="outline-container-sec-1-6-1" class="outline-4">
+<h4 id="sec-1-6-1"><span class="section-number-4">1.6.1</span> Enabling and using the Object Tracker  オブジェクトトラッカー (追跡) の有効化と使用</h4>
+<div class="outline-text-4" id="text-1-6-1">
+<hr  />
+<p>
+オブジェクトトラッカーの使用を開始するには :
+</p>
+
+<ol class="org-ol">
+<li>最新の <a href="https://www.google.com/intl/en/chrome/browser/canary.html">Chrome Canary</a> であることを確認してください。
+</li>
+<li>Developer Tools を開いて、右下の歯車 (gear) アイコンをクリックしてください。
+</li>
+<li>Profiler パネルを開くには、「Record Heap Allocations (レコードヒープ割り当て)」 というプロファイルが表示されます
+</li>
+</ol>
+<hr  />
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_27.png" alt="image_27.png" />
+</p>
+</div>
+
+
+
+
+<p>
+新しいオブジェクトがヒープ内で発見された場合に、上部のバー (bars) に示される。
+各バーの高さは、最近割り当てられたオブジェクトのサイズに対応し、
+バーの色は、これらのオブジェクトが依然として最終的なヒープスナップショットに生きているかどうかを示します。 :
+青い棒は、スケジュールの終わりにまだ生きているオブジェクトを示します、
+灰色の棒は、スケジュール中に割り付けられたが、それ以来ガベージコレクトされたオブジェクトを示します。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/collected.png" alt="collected.png" />
+</p>
+</div>
+
+
+<p>
+上記の例では、アクションは 10 回行った。
+サンプルプログラムでは、5つのオブジェクトをキャッシュするため、したがって、最後の 5 本の青いバーが期待されている。
+しかし、一番左の青いバーは、潜在的な問題を示しています。
+その後、その特定のスナップショットにズームインし、かつ、その時点で最近割り当てられたオブジェクトを表示するために
+上記のタイムラインでスライダを使用することができます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_29.png" alt="image_29.png" />
+</p>
+</div>
+
+
+<p>
+ヒープ内の特定のオブジェクトをクリックすると、ヒープのスナップショットの下部に、その保持するツリーが表示されます。
+</p>
+
+<p>
+オブジェクトへの保持パスの検査は、あなたのオブジェクトが収集されなかった理由を理解するのに十分な情報を与える必要があり、
+また、不要な参照を削除するために必要なコードの変更を行うことができます。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-7" class="outline-3">
+<h3 id="sec-1-7"><span class="section-number-3">1.7</span> Memory Profiling FAQ  メモリのプロファイリングよくある質問</h3>
+<div class="outline-text-3" id="text-1-7">
+</div><div id="outline-container-sec-1-7-1" class="outline-4">
+<h4 id="sec-1-7-1"><span class="section-number-4">1.7.1</span> Q: オブジェクトのすべてのプロパティが表示されない、彼らの文字列以外の値が表示されない！ なぜ？</h4>
+<div class="outline-text-4" id="text-1-7-1">
+<p>
+すべてのプロパティは、JavaScript ヒープの上に実際に格納されるとは限りません。
+それらのいくつかは、ネイティブコードを実行するゲッターを使用して実装される (implemented) 。
+そのような特性はゲッター (getters) を呼ぶコストを回避し、かつゲッターが "純粋な (pure) " 機能でない場合に、
+可能な (possible) プログラム状態の変更を回避するために、ヒープスナップ写真の中で捕らえられません。
+さらに、数値などの非ストリング(文字列)値は、スナップショットのサイズを削減する目的で捕獲されません。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-7-2" class="outline-4">
+<h4 id="sec-1-7-2"><span class="section-number-4">1.7.2</span> Q: <b>@</b> の文字の後の数字は何を意味する？ &#x2013; アドレスまたは ID ですか？ ID 値は本当にユニークですか？</h4>
+<div class="outline-text-4" id="text-1-7-2">
+<p>
+これはオブジェクト ID です。
+オブジェクトがガベージコレクション中に移動されるので、オブジェクトのアドレスの表示は意味をなさない。
+これらのオブジェクト ID は、実際の ID です &#x2013; その手段は、それらは得られた多数のスナップショット中で固執 (持続, persist) し、ユニークです。
+これは、ヒープ状態間の正確な比較を可能にします。
+これらの ID を維持することは、GC のサイクルにオーバーヘッドが追加されますが、
+最初のヒープスナップショットが得られた後にのみ、開始されます &#x2013; ヒーププロファイルが使用されない場合、オーバーヘッドはありません
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-7-3" class="outline-4">
+<h4 id="sec-1-7-3"><span class="section-number-4">1.7.3</span> Q: 「死んだ」（到達不能）"dead" (unreachable) オブジェクトは、スナップショットに含まれていますか？</h4>
+<div class="outline-text-4" id="text-1-7-3">
+<p>
+いいえ。
+到達可能なオブジェクトだけがスナップショットに含まれています。
+さらに、スナップショットをとることは、常に GC を行うことから始まります。
+</p>
+
+<hr  />
+<p>
+注: 執筆時点で、私たちは、ヒープのスナップショットを撮影するときに使用するヒープサイズの低下を軽減するために、この GC を避けることを計画している。
+    これはまだインプリメントされて (実装されて, implemented) いません。しかし、ごみは、まだスナップショットの外でしょう。
+</p>
+<hr  />
+</div>
+</div>
+<div id="outline-container-sec-1-7-4" class="outline-4">
+<h4 id="sec-1-7-4"><span class="section-number-4">1.7.4</span> Q: GC のルートには何が含まれて (comprises) いますか？</h4>
+<div class="outline-text-4" id="text-1-7-4">
+<p>
+多くのこと :
+</p>
+
+<ul class="org-ul">
+<li>built-in object maps; 内蔵されたオブジェクトマップ
+</li>
+<li>symbol table; シンボルテーブル
+</li>
+<li>stacks of VM threads; VM のスレッドのスタック
+</li>
+<li>compilation cache; コンパイルキャッシュ
+</li>
+<li>handle scopes; スコープを扱う
+</li>
+<li>global handles; グローバルハンドル
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_30.jpg" alt="image_30.jpg" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-7-5" class="outline-4">
+<h4 id="sec-1-7-5"><span class="section-number-4">1.7.5</span> Q: 私はメモリリークを検出するために Heap Profiler (ヒーププロファイラ) と Timeline Memory (タイムラインメモリ) ビューを使用するように言われてきた。どのツールを、最初に使用すべきですか？</h4>
+<div class="outline-text-4" id="text-1-7-5">
+<p>
+Timeline 。
+あなたがページを長時間使用した後に鈍化していることに最初に気づくとき、過度のメモリ使用量を診断するためにそれを使用してください。
+減速は以前メモリーリークの古典的な症状でした。しかし、それはさらに別のものかもしれない。
+&#x2013; おそらく、ページ内で paint やネットワークのボトルネックを持っています。ですから、ページで実際の問題を解決することを確実にしてください。
+</p>
+
+<p>
+メモリが問題であるかどうかを診断するには、Timeline パネルと Memory ビューに移動します。
+レコードボタンを押して、アプリケーションと対話して、漏れを引き起こしているかもしれないと思うあらゆるステップを繰り返します。
+録音を止めてください。
+グラフには、アプリケーションに割り当てられたメモリが表示されます。
+それがもし時間にわたって (常に落ちることのない) 増加する量のこれを消費していたら、それは、メモリーリークしているかもしれない表示です。
+</p>
+
+<p>
+メモリは、割り付けられたガベージコレクタが来た時に解放されているように、健康的なアプリケーションのプロファイルは、より多くの鋸 (のこぎり) 歯状の曲線のようになります。
+ここで心配することは何もない
+&#x2013; そこには常に JavaScript 、および、空の requestAnimationFrame さえ中で取引するコストが常にあるでしょう、このタイプのノコギリの原因となります、あなたはそれを避けることはできません。
+それが多くの割付け (配分, allocations) が作られている表示であるのでそれが鋭くない、(それは反対側の多くのごみと一致することができます) ことをただ確認してください。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_31.png" alt="image_31.png" />
+</p>
+</div>
+
+
+<p>
+目を離さないようにする必要があるのは、この曲線の勾配の増加率です。
+DOM ノードカウンタ、Document (文書) カウンタ、 診断中に役立つ Memory ビュー中の Event (イベント) リスナーをカウント、があります。
+DOM ノードは、ネイティブメモリーを使用し、直接 JavaScript のメモリグラフには影響しません。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_32.jpg" alt="image_32.jpg" />
+</p>
+</div>
+
+
+<p>
+メモリリークを持っている疑いがあるなら、Heap (ヒープ) プロファイラは、漏れの原因を発見するために使用することができます。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-7-6" class="outline-4">
+<h4 id="sec-1-7-6"><span class="section-number-4">1.7.6</span> Q: 私は、ヒープスナップショットで DOM ノードの数に気づきました。それは、一部は赤で強調 (ハイライト) され「独立している (デタッチ, Detached) DOM ツリー」として示されていた、一方で、他のものは黄色で。 これは何を意味しますか？</h4>
+<div class="outline-text-4" id="text-1-7-6">
+<p>
+あなたは、いくつかの異なる色のノードに気付くでしょう。
+赤いノード (暗い背景) は、JavaScript からそれらまで直接参照がありませんが、それらは切り離された DOM ツリーの一部であるので生きています。
+JavaScript (恐らく閉鎖か変数としての) からの参照がツリーのノードがあるかもしれません、それが偶然に DOM ツリー全体がガベージコレクトされるのを防いでいるのかもしれません。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_33.jpg" alt="image_33.jpg" />
+</p>
+</div>
+
+
+<p>
+しかしながら、黄色のノード (黄色の背景を備えた) は、JavaScript から直接に関係があります (直接参照を持っている) 。
+あなたの JavaScript からの参照を特定するために同じ デタッチ (離れている) DOM ツリーの黄色のノードを探してください。
+DOM ウィンドウから要素に結びつく一続きの (chain) プロパティがあるにはずです。
+(e.g window.foo.bar<sup><a id="fnr.1" name="fnr.1" class="footref" href="#fn.1">1</a></sup>.baz)
+</p>
+
+<p>
+離れているノードが全体像にどこに入るかのアニメーションは、下のように見ることができます :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/detached-nodes.gif" alt="detached-nodes.gif" />
+</p>
+</div>
+
+
+<hr  />
+<p>
+例: デタッチノードを検索するヒープのスナップショットを取るし、タイムライン内のノードの進化を見ることができる  <a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example4">detached nodes</a> (E 4) のこの例を試してみてください。
+</p>
+<hr  />
+</div>
+</div>
+<div id="outline-container-sec-1-7-7" class="outline-4">
+<h4 id="sec-1-7-7"><span class="section-number-4">1.7.7</span> Q: Shallow Size (浅く) の列と Retained Size (保持された) の列 (カラム) は何を表わしますか。また、それらの間の違いは何ですか。</h4>
+<div class="outline-text-4" id="text-1-7-7">
+<p>
+したがって、オブジェクトは、2 つの異なる方法で (生きている) メモリに保持することができます。
+&#x2013; 直接、別の生きているオブジェクトのいずれかによって (ウィンドウと文書は常に生きているオブジェクトです)
+   または、暗黙的に (DOM オブジェクトのように) レンダラーのネイティブ部分からの参照を保持することによって。
+</p>
+
+<p>
+後者は、これらのオブジェクトが GC によって自動的に配置されるのを防止してしまうもので、その結果リークを引き起こすものである。
+オブジェクト自身が保持しているメモリのサイズはシャロー (shallow) サイズとして知られている
+(一般的には、配列や文字列は、より大きなシャローサイズを持つ) 。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_36.jpg" alt="image_36.jpg" />
+</p>
+</div>
+
+
+<p>
+任意のサイズのオブジェクトは、それが他のオブジェクトが配置されるのを防ぐ (prevents) 場合、メモリを 1 トン保持することができます。
+オブジェクトが削除され (そして、これに依存していたものらが到達可能でなくなった) たら、解放できるメモリのサイズは、保持されたサイズ (retained size) と呼ばれます。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-7-8" class="outline-4">
+<h4 id="sec-1-7-8"><span class="section-number-4">1.7.8</span> Q: constructor (コンストラクタ) と retained views (保持ビュー) に多くのデータがあります。 漏れがあるかどうか、発見するためにどこから調べ始めるべき？</h4>
+<div class="outline-text-4" id="text-1-7-8">
+<p>
+あなたのツリーに保持された、従者が距離によってソートされれているように、最初のオブジェクトからの調査を始めることは一般によい考えである。
+(まあ、 window までの距離です)。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_37.jpg" alt="image_37.jpg" />
+</p>
+</div>
+
+
+<p>
+最短距離で保持されたオブジェクトは、通常メモリーリークを引き起こすことに対するあなたの第一 (最初の) 候補です。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-7-9" class="outline-4">
+<h4 id="sec-1-7-9"><span class="section-number-4">1.7.9</span> Q: 異なる Summary (概要)、Comparison (比較)、Dominators (ドミネータ) と Containment (封じ込め) ビューの違いは何ですか？</h4>
+<div class="outline-text-4" id="text-1-7-9">
+<p>
+あなたは、画面の下部にある利用可能なさまざまなデータビューを切り替えることで、いくつかのマイレージ (走行距離) を得ることができます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_38.jpg" alt="image_38.jpg" />
+</p>
+</div>
+
+
+<ul class="org-ul">
+<li>Summary view
+[概要]ビューでは、コンストラクタの名前でグループ化された型に基づいて、オブジェクト（およびそのメモリ使用）を追い詰めることができます。
+このビューには、DOMリークを追跡するために特に有用である。
+</li>
+
+<li>Comparison view
+比較ビューでは、オブジェクトが正しくガベージコレクタによってクリーンアップされている表示することで、メモリリークを追跡するのに役立ちます。
+一般的には、操作の前と後の 2つ (またはそれ以上) のメモリのスナップショットを記録し、比較するために使用。
+このアイデアは、あなたに解放されたメモリと、参照 (リファレンス) カウント中でデルタを検査するには、メモリーリークの存在および原因を確認できるということです。
+</li>
+
+<li>Containment view
+封じ込めビューは、私たちが何がそれらを周りに保っているかを調べるためにグローバルな名前空間 (すなわちウィンドウ) で参照されているオブジェクトを分析するのを支援し、
+オブジェクト構造のより良いビューを提供します。
+それはあなたがクロージャを分析し、低レベルでのオブジェクトに飛び込む (ダイブする) ことができます。
+</li>
+
+<li>Dominators view
+ドミネータビューは、オブジェクトへの予想外の参照がまだうろついていないか（つまり、これらは十分に含まれていること）と、
+その削除/ガベージコレクションが実際に動作していることを確認するのに役立ちます。
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-7-10" class="outline-4">
+<h4 id="sec-1-7-10"><span class="section-number-4">1.7.10</span> Q: Heap (ヒープ) プロファイラのさまざまなコンストラクタ (グループ) エントリはどのように対応していますか？</h4>
+<div class="outline-text-4" id="text-1-7-10">
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_39.jpg" alt="image_39.jpg" />
+</p>
+</div>
+
+
+<ul class="org-ul">
+<li>(global property) – （'window' のような）グローバルオブジェクトで、それが参照するオブジェクトとの間の中間のオブジェクト。
+オブジェクトがコンストラクタ Person を使用して作成され、グローバルオブジェクトが保持されている場合は、保持パスが [global] &gt; (global property) &gt; Person のようになります。
+これは標準 (norm ???) と対照をなす。そこでは、オブジェクトは直接参照する。
+私たちは、パフォーマンス上の理由から中間 (intermediate) オブジェクトを持っている。
+グローバルは定期的に変更され、非グローバルオブジェクトはグローバルには適用できないため、プロパティのアクセスの最適化は、よい仕事をする。
+</li>
+
+<li>(roots) – 保持する (retaining) ツリービューでのルートエントリは、選択されたオブジェクトに参照を持つ実体 (entities) です。
+これらはさらに、それ自身の目的のためのエンジンで作成された参照でありえます。
+エンジンは、オブジェクトを参照のキャッシュを持っていますが、しかし、そのようなすべての参照が弱く、真に強い参照がないことを考えると収集されてからオブジェクトを防ぐことはできません。
+</li>
+
+<li>(closure) – 関数クロージャーを通じてオブジェクトのグループへの参照のカウント
+</li>
+
+<li>(array, string, number, regexp) – 配列、文字列、数値、または正規表現を参照するプロパティを持つオブジェクト型のリスト
+</li>
+
+<li>(compiled code) – 単純に、コンパイルされたコードに関連するすべてのもの。
+スクリプトは、関数に似ていますが、 &lt;SCRIPT&gt; 体 (body) に対応しています。
+SharedFunctionInfos (SFI) は、機能やコンパイルされたコードの間に立っオブジェクトです。
+SFI がない間、関数は、通常、コンテキストを持っています。
+</li>
+
+<li>HTMLDivElement, HTMLAnchorElement, DocumentFragment etc – 要素や、コードによって参照される特定の種類のドキュメントオブジェクトへの参照。
+</li>
+</ul>
+
+<p>
+あなたが見ることがあるような、他のオブジェクトの多くは、おそらくあなたのコードのライフサイクル中に生成されたと下記のコントローラと同じように、
+イベントリスナーだけでなく、カスタムオブジェクトを含めることができます。 :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_40.jpg" alt="image_40.jpg" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-7-11" class="outline-4">
+<h4 id="sec-1-7-11"><span class="section-number-4">1.7.11</span> Q: 図 (数字) に影響を及ぼしているかもしれないものとして、Chrome でオフする必要があることはありますか？</h4>
+<div class="outline-text-4" id="text-1-7-11">
+<p>
+クロームDevToolsを使用したプロファイリングのいずれかのタイプを実行する場合、
+それはあなたがすべての拡張機能を無効にしてシークレットモードでの実行または
+カスタム (<a href="http://www.chromium.org/developers/how-tos/run-chromium-with-flags">custom</a>) ユーザーデータディレクトリに Chrome を起動する、どちらかことをお勧めします (&#x2013;user-data-dir="") 。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/javascript-memory-profiling/image_41.jpg" alt="image_41.jpg" />
+</p>
+</div>
+
+
+<p>
+アプリケーション、拡張機能、さらにはコンソールログ情報は、あなたの図に数字上の暗黙の影響を及ぼす場合があります。また、できる限り信頼できるようにしておきたい。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-7-12" class="outline-4">
+<h4 id="sec-1-7-12"><span class="section-number-4">1.7.12</span> Closing remarks  結びの言葉</h4>
+<div class="outline-text-4" id="text-1-7-12">
+<p>
+今日の JavaScript エンジンは、多くの状況の私たちのコードによって生成されたごみを高度に自動的に清潔にすることができます。
+それによると、彼らは唯一これまで行くことができる、そして私たちのアプリケーションは、まだ論理エラーによって引き起こされたメモリリークを起こしやすい傾向がある。
+あなたのボトルネックを発見するために、かつ利用可能なツールを使用し、そして、覚えて、それを推測しない &#x2013; それをテストします。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-8" class="outline-3">
+<h3 id="sec-1-8"><span class="section-number-3">1.8</span> Supporting Demos  サポートのデモ</h3>
+<div class="outline-text-3" id="text-1-8">
+</div><div id="outline-container-sec-1-8-1" class="outline-4">
+<h4 id="sec-1-8-1"><span class="section-number-4">1.8.1</span> Debugging Memory Leaks  メモリリークをデバッグ</h4>
+<div class="outline-text-4" id="text-1-8-1">
+<p>
+我々はこのガイドでそれらを言及したが、種々のメモリの問題をテストするためのエンド·ツー·エンドの例の良いセット、
+メモリリークするDOMノードの成長に至るまでは、以下に要約されています。
+あなた自身の、より複雑なページやアプリケーション上でツールを使用する前に、それらを試したいことがあります。
+</p>
+
+<ul class="org-ul">
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example1">Example 1: Growing memory</a> 成長するメモリ
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example2">Example 2: Garbage collection in action</a> アクションでのガベージコレクション
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example3">Example 3: Scattered objects</a> 散乱オブジェクト
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example4">Example 4: Detached nodes</a> 独立したノード
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example5">Example 5: Memory and hidden classes</a> メモリと隠しクラス
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example6">Example 6: Leaking DOM nodes</a> 漏れ DOM ノード
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example7">Example 7: Eval is evil (almost always)</a> eval は（ほとんどの場合）悪である
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example8">Example 8: Recording heap allocations</a> 記録ヒープ割り当て
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example9">Example 9: DOM leaks bigger than expected</a> DOM は、予想よりも大きなリークする
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example10">Example 10: Retaining path</a> 保持パス
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/demos/memory/example11">Example 11: Last exercise</a> 最後の練習
+</li>
+</ul>
+
+<p>
+追加のデモは次のものが利用可能です :
+ (Last updated 2013-11-04)
+</p>
+
+<ul class="org-ul">
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-summary">Gathering Scattered Objects</a> 散在するオブジェクトの収集
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-comparison">Verifying Action Cleanness</a> 検証アクション清浄度
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-containment">Exploring the Heap Contents</a> ヒープの内容を探る
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-dom-leaks">Uncovering DOM Leaks</a> DOM リークを暴く
+</li>
+<li><a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling-dominators">Finding Accumulation Points</a> 累積ポイントを見つける
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-9" class="outline-3">
+<h3 id="sec-1-9"><span class="section-number-3">1.9</span> Community Resources  コミュニティリソース</h3>
+<div class="outline-text-3" id="text-1-9">
+<p>
+ウェブ・アプリケーションに Chrome DevTools を使用して、見つけること
+および固定メモリ問題についてのコミュニティーによって書かれた多くの優れた資源がある。
+下記は有用であると感じるかもしれないいくらかの選択である :
+</p>
+
+<ul class="org-ul">
+<li><a href="http://slid.es/gruizdevilla/memory">memory by Gonzalo Ruiz de Villa</a> Chrome DevTools でメモリリークを発見し、デバッグ
+</li>
+<li><a href="http://coding.smashingmagazine.com/2012/06/12/javascript-profiling-chrome-developer-tools/">JavaScript Profiling With The Chrome Developer Tools | Smashing Coding</a> DevTools で JavaScript のプロファイリング
+</li>
+<li><a href="http://www.html5rocks.com/en/tutorials/memory/effectivemanagement/">Effectively managing memory at Gmail scale - HTML5 Rocks</a> GMail のスケールでの効果的なメモリ管理
+</li>
+<li><a href="http://www.html5rocks.com/en/tutorials/developertools/revolutions2013/">Chrome DevTools Revolutions 2013 - HTML5 Rocks</a> Chrome DevTools 革命 2013
+</li>
+<li><a href="http://www.slideshare.net/matenadasdi1/google-chrome-devtools-rendering-memory-profiling-on-open-academy-2013">Google Chrome DevTools: Rendering &amp; Memory profiling on Open Academ&#x2026;</a> DevTools レンダリングおよびメモリプロファイリング
+</li>
+<li><a href="http://addyosmani.com/blog/performance-optimisation-with-timeline-profiles/">Improving Web App Performance With the Chrome DevTools Timeline and Profiles</a> DevTools タイムラインとプロファイルとのパフォーマンスの最適化
+</li>
+</ul>
+</div>
+</div>
+</div>
+<div id="footnotes">
+<h2 class="footnotes">Footnotes: </h2>
+<div id="text-footnotes">
+
+<div class="footdef"><sup><a id="fn.1" name="fn.1" class="footnum" href="#fnr.1">1</a></sup> <p>DEFINITION NOT FOUND.</p></div>
+
+
+</div>
+</div></div>
+<div id="postamble" class="status">
+<p class="author">Author: chidamiyuki</p>
+<p class="date">Created: 2014-01-19 Sun 22:25</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.1)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

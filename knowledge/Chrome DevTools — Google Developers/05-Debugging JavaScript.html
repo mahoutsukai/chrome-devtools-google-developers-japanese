@@ -1,0 +1,1087 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>05-Debugging JavaScript</title>
+<!-- 2014-01-19 Sun 22:20 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="chidamiyuki" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/org/worg.css" />
+<link rel="stylesheet" type="text/css" href="../css/mi.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">05-Debugging JavaScript</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Debugging JavaScript JavaScript のデバッグ (Last updated 2013-11-04)</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Sources (ソース) パネル The Sources Panel</a>
+<ul>
+<li><a href="#sec-1-1-1">1.1.1. 実行制御 Execution control</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-2">1.2. ブレークポイント (区切り点) によるデバッグ Debugging With Breakpoints</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. DOM 変化イベント上のブレークポイント Breakpoints on DOM Mutation Events</a></li>
+<li><a href="#sec-1-2-2">1.2.2. XHRの上のブレークポイント Breakpoints on XHR</a></li>
+<li><a href="#sec-1-2-3">1.2.3. JavaScriptのイベントリスナにブレークポイント Breakpoints on JavaScript Event Listeners</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-3">1.3. ライブ編集 Live Editing</a></li>
+<li><a href="#sec-1-4">1.4. 例外処理 Handling Exceptions</a>
+<ul>
+<li><a href="#sec-1-4-1">1.4.1. 例外の追跡 Tracking exceptions</a></li>
+<li><a href="#sec-1-4-2">1.4.2. スタックトレースを印刷する Printing stack traces</a></li>
+<li><a href="#sec-1-4-3">1.4.3. window.onerror を使用して、実行時に例外の処理 Handling exceptions at runtime using window.onerror</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-5">1.5. きれいな印刷 Pretty Print</a></li>
+<li><a href="#sec-1-6">1.6. ソースマップ Working With Source Maps</a>
+<ul>
+<li><a href="#sec-1-6-1">1.6.1. ソース・マップはどのように作動しますか。 How do Source Maps work?</a></li>
+<li><a href="#sec-1-6-2">1.6.2. @sourceURL and displayName in action</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-7">1.7. Read more</a>
+<ul>
+<li><a href="#sec-1-7-1">1.7.1. Conditional breakpoints</a></li>
+<li><a href="#sec-1-7-2">1.7.2. Working With Source Maps</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> <a href="https://developers.google.com/chrome-developer-tools/docs/javascript-debugging">Debugging JavaScript</a> JavaScript のデバッグ (Last updated 2013-11-04)</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<span class="timestamp-wrapper"><span class="timestamp">[2014-01-14 Tue 12:52]</span></span>
+JavaScript アプリケーション増加の complexity (複雑さ) として、開発者は、速く問題の原因を発見し、かつそれを効率的にFIXするのを支援するために強力なデバッグ用ツールを必要とします。
+Chrome DevTools は、JavaScript を debugging (デバッグすること) をそれほど痛くなくするのを支援する多くの有用なツールを含んでいます。
+</p>
+
+<p>
+このセクションでは、Google Closure hovercard demo ( <a href="http://closure-library.googlecode.com/svn/trunk/closure/goog/demos/hovercard.html">goog.ui.HoverCard</a> ) と、このページにある他の動的な例をデバッグすることによって、これらのツールを使用する方法をウォークスルーします。
+</p>
+
+<p>
+注: ウェブディベロッパーで、DevToolsの最新バージョンを得たければ、Chrome Canary を使用するべきです。
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Sources (ソース) パネル The Sources Panel</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+Sources パネルはあなたにあなたの JavaScript コードをデバッグさせます。
+それは <a href="https://code.google.com/p/v8/">V8</a> デバッガにグラフィカル・インターフェースを供給します。
+Sources パネルを調査するために下記のステップに従ってください:
+</p>
+
+<ul class="org-ul">
+<li>Google Closure hovercard デモページ <a href="http://closure-library.googlecode.com/svn/trunk/closure/goog/demos/hovercard.html">goog.ui.HoverCard</a> を開く
+</li>
+<li>このチュートリアルの DevTools セクションにアクセスする方法で説明したように DevTools ウィンドウを開きます
+</li>
+<li>選択されていない場合は、[Sources ソース] を選択。
+</li>
+</ul>
+
+
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_0.png" alt="image_0.png" />
+</p>
+</div>
+
+
+<p>
+Sources [ソース] パネルでは、検査 (inspected) のページの一部であるすべてのスクリプトを確認できます。
+一時停止、再開、およびコードをステップ実行するための標準的なコントロールは、パネル選択アイコンの下に設けられている。 (mi注: 2013-11 から上に配置された)
+例外 (exceptions) で一時停止を強制するためのボタンがウィンドウの下部にあります。 (mi注: コンセントみたいなアイコン。紫にすると良いやつ。)
+ソースは、個別のタブに表示され、「 |&gt; 」(左上のアイコン) をクリックすると、開いているすべてのスクリプトが表示され、ファイルナビゲータを開きます。
+</p>
+
+
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_2.png" alt="image_2.png" />
+</p>
+</div>
+</div>
+
+
+
+<div id="outline-container-sec-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> 実行制御 Execution control</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<p>
+実行制御ボタンは (mi注: 右) 側面の一番上に位置し、あなたがコードによって歩むことを可能にします。
+利用可能なボタンは次のとおりです:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<tbody>
+<tr>
+<td class="left">Continue (継続):</td>
+<td class="left">私たちが別の区切り点に遭遇するまで、コード実行を継続します。</td>
+<td class="left">再生ボタンを縦に分割したようなアイコン</td>
+</tr>
+
+<tr>
+<td class="left">Step over (ステップオーバー):</td>
+<td class="left">各ラインが更新されている変数にどのような影響を与えるかについての洞察を得るために、コード行ずつステップ実行。</td>
+<td class="left">「右に回す」のようなアイコン</td>
+</tr>
+
+<tr>
+<td class="left">&#xa0;</td>
+<td class="left">あなたのコードが別の関数を呼び出す必要があり、デバッガは、フォーカスが現在の関数に残るようにする代わりステップオーバー、そのコードにジャンプしません。</td>
+<td class="left">&#xa0;</td>
+</tr>
+
+<tr>
+<td class="left">Step into:</td>
+<td class="left">ステップオーバーのようだが、ただし、関数呼び出し時にステップをクリックすると、デバッガは関数の定義の最初の行に実行を移動させることになります。</td>
+<td class="left">「押している」ようなアイコン</td>
+</tr>
+
+<tr>
+<td class="left">Step out:</td>
+<td class="left">関数に足を踏み入れた (stepped into) 、 これを選択する (clicked) と、関数定義の残りの部分が実行されるようになりますし、デバッガが親関数にその実行を移動します。</td>
+<td class="left">「出て行く」ようなアイコン</td>
+</tr>
+
+<tr>
+<td class="left">Toggle breakpoints (ブレークポイントを切り替える)</td>
+<td class="left">そのままその有効な状態を残したまま、オン/オフのブレークポイントを切り替えます。</td>
+<td class="left">進む矢印に打ち消し線</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Sources パネルにおいて利用可能ないくつかの関連するキーボード・ショートカットがさらにあります:
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">&#xa0;</th>
+<th scope="col" class="left">on Mac</th>
+<th scope="col" class="left">other platforms</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Continue:</td>
+<td class="left">[F8] or [Command-/] (forward slash)</td>
+<td class="left">[Control-/] (forward slash)</td>
+</tr>
+
+<tr>
+<td class="left">Step over:</td>
+<td class="left">F10 or Command-' (apostrophe)</td>
+<td class="left">Control-' (apostrophe)</td>
+</tr>
+
+<tr>
+<td class="left">Step into:</td>
+<td class="left">F11 or Command-; (semi-colon)</td>
+<td class="left">Control-; (semi-colon);</td>
+</tr>
+
+<tr>
+<td class="left">Step out</td>
+<td class="left">Shift-F11 or Shift-Command-; (semi-colon)</td>
+<td class="left">Shift-Control-; (semi-colon)</td>
+</tr>
+
+<tr>
+<td class="left">Next call frame</td>
+<td class="left">Control-. (period)</td>
+<td class="left">Control-. (period)</td>
+</tr>
+
+<tr>
+<td class="left">Previous call frame</td>
+<td class="left">Control-, (comma)</td>
+<td class="left">Control-, (comma)</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+支援された他のキーボード・ショートカットのウォークスルーについては、<a href="https://developers.google.com/chrome-developer-tools/docs/shortcuts">Keyboard Shortcuts - Chrome DevTools — Google Developers</a> を参照してください。
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> ブレークポイント (区切り点) によるデバッグ Debugging With Breakpoints</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+ブレークポイントは、デバッグのために場所に置くスクリプト内の意図的な (intentional) 停止や一時停止場所です。
+アプリケーションのUIとネットワークの側面 (様相, aspects) をターゲットにした、JavaScriptコードおよびブレークポイント上でセットされたブレークポイントを使用して、debuggingJavaScript を見よう。
+</p>
+</div>
+
+<ol class="org-ol"><li>ワークフロー Workflow<br  /><div class="outline-text-5" id="text-1-2-0-1">
+<p>
+まず、[control-Shift-I\ キーのショートカットを押すことで DevTools を開きます。
+その命令行のためにブレークポイント(区切り点)をセットするためにライン溝(gutter)をクリックして、別のスクリプトを選択して、別のブレークポイント(区切り点)をセットしてください。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_3.png" alt="image_3.png" />
+</p>
+</div>
+
+
+<p>
+設定したすべてのブレークポイントは右のサイドバーの 「Breakpoints」 のところに表示されます。
+ブレークポイントは、このサイドバーにあるチェックボックスを使用して有効か/無効にすることができます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_4.png" alt="image_4.png" />
+</p>
+</div>
+
+
+<p>
+エントリーをクリックすると、ソース・ファイル中の強調されたラインへジャンプします。
+1つ以上のスクリプトの中で1つ以上の区切り点をセットすることができます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_5.png" alt="image_5.png" />
+</p>
+</div>
+
+
+<p>
+青いタグ (blue tag) ブレークポイント(区切り点) 指標のクリックによりブレークポイントを削除してください。
+ブレークポイントのインジケータ(indicator, 指標)メニューは、いくつかのオプションを含みます。
+"Continue to here", 「ここを続行する」、
+"Edit Breakpoint",         「編集ブレークポイント」、
+"Disable Breakpoint" and         「無効ブレークポイント」と
+ローカルにファイルを保存しているなら "Save As",        「名前を付けて保存」、
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_6.png" alt="image_6.png" />
+</p>
+</div>
+
+
+<p>
+ブレークポイントを設定したら、その特定のブレークポイントの条件文 (conditional statement) を設定するためにガターラインに青い矢印タグインジケータを右クリックすることができます。
+任意の式 (expression) を入力して、ブレークポイントは、条件が真の場合のみ停止します。
+タグは、active (アクティブ)、inactive (非アクティブ)、および removed (削除) の三つの状態を順に切り替えます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_7.png" alt="image_7.png" />
+</p>
+</div>
+
+
+<p>
+Pause (一時停止) ボタンをクリックし、Google Closure hovercard のデモページの上にマウスを移動します。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_8.png" alt="image_8.png" />
+</p>
+</div>
+
+
+<p>
+スクリプトを一時停止している間は、右側のバーに現在のコールスタック (current call stack) とスコープ内の変数 (in-scope variables) を見ることができます。
+コール・スタックは、コードがあったポイントに通じた完全な実行経路を表示します、私たちにエラーを引き起こしたコードの欠点に対する洞察力を与えて休止します。
+</p>
+
+<p>
+また、一時停止しながら実験するためにコンソールを開くことができます。
+ビューにコンソールを持って来るために、[Esc] キーを押してください。
+</p>
+
+
+<p>
+<b>次のことを覚えておいてください Remember:   | コンソールは、デバッガが現在一時停止している場所の範囲内で評価されます。</b>
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/breakpoint-scope.png" alt="breakpoint-scope.png" />
+</p>
+</div>
+
+
+<p>
+あなたのコードがもし20ミリセカンドごとを発射するループを使用していたら、思い出してください、恐らくデバッガが各反復上で halt (停止) することは望まないでしょう。
+条件文/ブレークポイントを使用すると、これを支援することができます。
+下記の例において、minLevel変数が 2004 より大きい場合にはコードの実行は、中断しますので、私たちは、デバッガで追加のクリックの数を回避けるために役立ちます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/conditional.png" alt="conditional.png" />
+</p>
+</div>
+
+
+<p>
+注：DevToolsインターフェースからブレークポイントを設定することは望ましくないことがあります。
+    コードからデバッガを起動したいならば、あなたはこれを達成するために、デバッガキーワード <a href="https://developers.google.com/chrome-developer-tools/docs/console#setting_breakpoints_in_javascript">Using the Console - Chrome DevTools — Google Developers</a> を使用することができます。
+</p>
+</div>
+</li>
+<li><b>Using Breakpoints</b> ブレークポイントの使用<br  /><div class="outline-text-5" id="text-1-2-0-2">
+<p>
+ソース・パネルが開いていることを確かめて、スクリプトのドロップダウンから「script.js」を選びます。
+</p>
+
+<ul class="org-ul">
+<li>ラインガターをクリックして、8 行目にブレークポイントを設定
+(大きなファイルで行を明示的に移動するには [Ctrl + G] のショートカットを使用することができます)
+</li>
+<li>このページの上にマウスを移動
+</li>
+<li>ブレークポイントで停止する必要があります
+</li>
+<li>ローカル変数とグローバル変数、関数の引数などを検査するために、ソースコードの上にマウスポインターを移動
+</li>
+<li>ブレークポイントのブルータグのインジケータをクリックして、ブレークポイントを削除する
+</li>
+<li>[Continue 続行]ボタン (再生ボタンぽいの) をクリックするか、再開するDevToolsウィンドウに [F8] キーを打つ
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_10.png" alt="image_10.png" />
+</p>
+</div>
+</div>
+</li>
+
+<li>動的な JavaScript の中のブレークポイント (区切り点) Breakpoints in Dynamic JavaScript<br  /><div class="outline-text-5" id="text-1-2-0-3">
+<ul class="org-ul">
+<li>動的なスクリプトをロード (mi注: &lt;- この行がボタンになっている)
+</li>
+<li>Sources パネルで、scripts ドロップダウンから「dynamicScript.js」を選ぶ、また 2行目にブレークポイントを設定する
+</li>
+<li>動的なスクリプトから関数を呼び出す (mi注: &lt;- この行がボタンになっている。初期は、非クリッカブル)
+</li>
+<li>あなたは、ブレークポイントで停止する必要があります
+</li>
+<li>[Continue 続行] ボタンをクリックするか、再開する DevTools ウィンドウに [F8] キーを打つ
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_12.png" alt="image_12.png" />
+</p>
+</div>
+
+
+<p>
+注意：dynamicScript.jsファイルの末尾に "//@ sourceURLに= dynamicScript.js"行に注目してください。
+      この技術は、evalを用いて作成されたスクリプトに名前を与え、<a href="https://developers.google.com/chrome-developer-tools/docs/javascript-debugging#source-maps">Source Maps</a> のセクションでより詳細に説明する。
+      ブレークポイントは、ユーザ指定された名前を持っている場合にのみ、動的なJavaScriptで設定することができます。
+</p>
+</div>
+</li>
+<li>次の JavaScript ステートメント中の休止 Pause on Next JavaScript Statement<br  /><div class="outline-text-5" id="text-1-2-0-4">
+<ul class="org-ul">
+<li>[Pause 一時停止] ボタンをクリックしてください
+</li>
+<li>このセクションの上にマウスを移動
+</li>
+<li>あなたはの onmouseover 関数で停止する必要があります
+</li>
+<li>[続行] ボタンをクリックするか、再開する DevTools ウィンドウに [F8] キーを打つ
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_15.png" alt="image_15.png" />
+</p>
+</div>
+</div>
+</li>
+
+<li>例外で一時停止 Pause on Exceptions<br  /><div class="outline-text-5" id="text-1-2-0-5">
+<ul class="org-ul">
+<li>Pause on all exceptions (すべての例外で一時停止) モードに切り替えるには、ウィンドウの下部にある Pause on exceptions (例外で一時停止) ボタン (コンセントみたいなボタン) をクリックします
+</li>
+<li>例外を発生させる！ (Raise exception!) (mi注: &lt;- この行がボタンになっている。)
+</li>
+<li>あなたは raiseAndCatchException 関数で停止する必要があります
+</li>
+<li>[続行] ボタンをクリックするか、再開する DevTools ウィンドウに [F8] キーを打つ
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_18.png" alt="image_18.png" />
+</p>
+</div>
+</div>
+</li>
+
+<li>キャッチされない例外で一時停止 Pause on Uncaught Exceptions<br  /><div class="outline-text-5" id="text-1-2-0-6">
+<ul class="org-ul">
+<li>Pause on uncaught exceptions (キャッチされない例外で一時停止) モードに切り替えるには、もう一度 Pause on exceptions (例外で一時停止) ボタン (コンセントみたいなボタン) をクリックします
+</li>
+<li>例外を発生させる！ (Raise exception!) (mi注: &lt;- この行がボタンになっている。)
+</li>
+<li>例外がキャッチされているために、raiseAndCatchException 関数で停止しないでください
+</li>
+<li>キャッチされない例外を発生させる！ Raise uncaught exception! (mi注: &lt;- この行がボタンになっている。)
+</li>
+<li>あなたは raiseException を関数で停止する必要があります
+</li>
+<li>[続行] ボタンをクリックするか、再開する DevTools ウィンドウに [F8] キーを打つ
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_21.png" alt="image_21.png" />
+</p>
+</div>
+</div>
+</li>
+
+<div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> DOM 変化イベント上のブレークポイント Breakpoints on DOM Mutation Events</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<ul class="org-ul">
+<li>以下の「Parent Element (親元素)」を右クリックして、コンテキストメニューから [Inspect Element (エレメントを検査する)] を選択してください。
+</li>
+<li>Elements (要素) のパネルで要素を右クリックして、[Break on Subtree Modifications] (サブツリー修正中のブレーク) を選択してください。
+</li>
+<li>子どもを追加してください! Append child! (mi注: &lt;- この行がボタンになっている。)
+</li>
+<li>appendChild 関数呼び出しの上で止まるべきです。
+</li>
+<li>[続行] ボタンをクリックするか、再開する DevTools ウィンドウに [F8] キーを打つ
+</li>
+</ul>
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_23.png" alt="image_23.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> XHRの上のブレークポイント Breakpoints on XHR</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<ul class="org-ul">
+<li>Sources パネルの右側に XHR ブレークポイント (XHR Breakpoints) のサイドバーのペインにある[Add (追加)]ボタン (＋) をクリックします
+</li>
+<li>テキスト入力欄に「data.txt」と入力し、Enter キーを押す
+</li>
+<li>XHRでdata.txtを取得 (mi注: &lt;- ボタン)
+</li>
+<li>あなたは、send (送信) 関数の呼び出しで停止する必要があります
+</li>
+<li>新しく作成されたブレークポイントを右クリックし、コンテキストメニュー項目から [Remove Breakpoint] を選択
+</li>
+<li>[続行] ボタンをクリックするか、再開する DevTools ウィンドウに [F8] キーを打つ
+</li>
+</ul>
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_26.png" alt="image_26.png" />
+</p>
+</div>
+
+
+<p>
+注意： URL フィルタ、XHR ブレークポイントのサイドバーペインの XHR のブレークポイントエントリをダブルクリックして編集します。
+       空のURLフィルタを備えたXHR区切り点はどんなXHRとも一致するでしょう。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> JavaScriptのイベントリスナにブレークポイント Breakpoints on JavaScript Event Listeners</h4>
+<div class="outline-text-4" id="text-1-2-3">
+<ul class="org-ul">
+<li>スクリプトパネルの右側に Event Listener Breakpoints のサイドバーのペインを展開します
+</li>
+<li>マウス入力 (Mouse entry) を展開
+</li>
+<li>マウスアウトエントリ (mouseout entry) 近くのチェックボックスをクリックすることにより、マウスアウトイベントリスナにブレークポイントを設定
+</li>
+</ul>
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_27.png" alt="image_27.png" />
+</p>
+</div>
+
+
+<ul class="org-ul">
+<li>下のようなボックスを横切るようにマウスを移動させてください:
+</li>
+</ul>
+<p>
+Note: Following events are supported   Keyboard: keydown, keypress, keyup, textInput
+Mouse: click, dblclick, mousedown, mouseup, mouseover, mousemove, mouseout, mousewheel
+Control: resize, scroll, zoom, focus, blur, select, change, submit, reset
+Clipboard: copy, cut, paste, beforecopy, beforecut, beforepaste
+Load: load, unload, abort, error
+DOM Mutation: DOMActivate, DOMFocusIn, DOMFocusOut, DOMAttrModified, DOMCharacterDataModified, DOMNodeInserted, DOMNodeInsertedIntoDocument, DOMNodeRemoved, DOMNodeRemovedFromDocument, DOMSubtreeModified, DOMContentLoaded
+Device: deviceorientation, devicemotion
+</p>
+</div>
+</div>
+</div>
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> ライブ編集 Live Editing</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+Authoring And Workflow (オーサリングとワークフロー) では、Sources パネル内のスクリプトに変更を加える方法を説明しました。
+ブレークポイントでいる間、さらに、主なエディター・パネルへクリックし修正をすることにより、編集スクリプトを実践することは可能である。
+</p>
+
+<ul class="org-ul">
+<li><a href="http://closure-library.googlecode.com/svn/trunk/closure/goog/demos/hovercard.html">goog.ui.HoverCard</a> デモに移動します
+</li>
+<li>Sources パネルでは、「mouse.js」を開き、onMouseOut() 関数に移動するために [Ctrl/ Cmd + Shift + O] を使用
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_30.png" alt="image_30.png" />
+</p>
+</div>
+
+
+<ul class="org-ul">
+<li>デバッグを一時停止する pause ボタンをクリックしてください
+</li>
+<li>関数を変更、console.log('Moused out') を最後に追加
+</li>
+<li>[Cmd +S or Ctrl + S] ショートカットを使い、これらの変更を保存します。名前を付けて保存してください。
+</li>
+<li>実行を再開するために、一時停止/再開ボタンをクリックしてください
+</li>
+<li>hover out すると、新しいメッセージがコンソールに記録されます
+</li>
+</ul>
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_31.png" alt="image_31.png" />
+</p>
+</div>
+
+
+<p>
+これは、あなたのブラウザを離れることなくDevTools内から変更を保存することができます。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> 例外処理 Handling Exceptions</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+それでは、Chrome DevTools を使用して例外とスタックトレースに対処する方法を見てみましょう。
+例外処理 (Exception handling) は、多くの場合、JavaScript コードの実行の通常の流れを変える例外 - 特別な処理を必要とする例外的な状況 -  の発生に応答するプロセスです。
+</p>
+
+<p>
+注：Web開発者であり、DevToolsの最新バージョンを取得したい場合は、Chromeのカナリアを使用する必要があります。
+</p>
+</div>
+
+<div id="outline-container-sec-1-4-1" class="outline-4">
+<h4 id="sec-1-4-1"><span class="section-number-4">1.4.1</span> 例外の追跡 Tracking exceptions</h4>
+<div class="outline-text-4" id="text-1-4-1">
+<p>
+何かがうまく行かない場合、DevTools コンソール (Ctrl+Shift+J / Cmd+Option+J) を開き、そこに多くのジャバスクリプト・エラーメッセージを見つけることができます。
+メッセージにはそれぞれナビゲートすることができる番号を備えたファイル名へのリンクがあります。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_32.png" alt="image_32.png" />
+</p>
+</div>
+</div>
+
+
+<ol class="org-ol"><li>例外スタック・トレースを見ること Viewing exception stack trace<br  /><div class="outline-text-6" id="text-1-4-1-0-1">
+<p>
+エラーに結びつくいくつかの実行パスがあるかもしれない。また、それらのどれが起こったかは必ずしも明白だとは限らない。
+一旦 DevTools ウィンドウが開かれれば (Once DevTools window is opened) 、コンソール中の例外に完全な JavaScript コール・スタック (complete JavaScript call stacks) が伴われる。
+スタック・フレームを見て、かつコード中の対応する位置へナビゲートする、これらのコンソール・メッセージを拡張することができる:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_33.png" alt="image_33.png" />
+</p>
+</div>
+</div>
+</li>
+
+
+<li>JavaScript 例外上の休止 Pause on JavaScript exceptions<br  /><div class="outline-text-6" id="text-1-4-1-0-2">
+<p>
+また、JavaScriptの実行、次回の例外がスローされた一時停止して、アプリケーションのそのコールスタック、スコープ変数と状態を検査することができます。
+スクリプトパネルの下部にあるトライステート停止ボタン（コンセントみたいなボタン）を使用すると、さまざまな例外処理モードを切り替えることが可能になります。
+すべての例外、あるいは uncaught (キャッチされていない) もの上ののみ一方の休止に選ぶことができます。あるいは、例外をすべて無視することができます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_35.png" alt="image_35.png" />
+</p>
+</div>
+</div>
+</li></ol>
+</div>
+
+<div id="outline-container-sec-1-4-2" class="outline-4">
+<h4 id="sec-1-4-2"><span class="section-number-4">1.4.2</span> スタックトレースを印刷する Printing stack traces</h4>
+<div class="outline-text-4" id="text-1-4-2">
+<p>
+DevTools コンソールにログメッセージを印刷すると、アプリケーションがどのように動作するかを理解するのに非常に役立ちます。
+あなたが関連するスタックトレースを含めることにより、ログエントリがさらに有益なことができます。
+それを行うためのいくつかの方法がある。
+</p>
+</div>
+<ol class="org-ol"><li>Error.stack<br  /><div class="outline-text-6" id="text-1-4-2-0-1">
+<p>
+各Errorオブジェクトは、スタックトレースが含んでいる stack という名前の文字列プロパティがあります。:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_36.png" alt="image_36.png" />
+</p>
+</div>
+</div>
+</li>
+
+<li>console.trace()<br  /><div class="outline-text-6" id="text-1-4-2-0-2">
+<p>
+現在の JavaScript コールスタックを印刷する console.trace() コールを使用してコードを計測しながら実行できます。:
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_37.png" alt="image_37.png" />
+</p>
+</div>
+</div>
+</li>
+
+<li>console.assert()<br  /><div class="outline-text-6" id="text-1-4-2-0-3">
+<p>
+JavaScript コードにアサーションを配置する方法もあります。
+最初のパラメータとして、エラー状態を備え単に console.assert() を呼び出します。
+この式がfalseに評価されるたびに、対応するコンソールレコードが表示されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_38.png" alt="image_38.png" />
+</p>
+</div>
+</div>
+</li></ol>
+</div>
+
+<div id="outline-container-sec-1-4-3" class="outline-4">
+<h4 id="sec-1-4-3"><span class="section-number-4">1.4.3</span> window.onerror を使用して、実行時に例外の処理 Handling exceptions at runtime using window.onerror</h4>
+<div class="outline-text-4" id="text-1-4-3">
+<p>
+Chrome は window.onerror するハンドラ関数を設定することがサポートされています。
+JavaScriptの例外がウィンドウのコンテキストでスローされ、任意のtry / catchブロックでキャッチされていないときはいつでも、
+関数は例外のメッセージで起動され、例外がスローされたファイルと、そのファイルの行番号のURLとして渡さの順に三つの引数。
+キャッチされた例外に関する情報を収集し、それをサーバに戻って報告するエラーハンドラを設定することは便利であると感じるかもしれません。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_39.png" alt="image_39.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-5" class="outline-3">
+<h3 id="sec-1-5"><span class="section-number-3">1.5</span> きれいな印刷 Pretty Print</h3>
+<div class="outline-text-3" id="text-1-5">
+<p>
+あなたは DevTools にミニファイされた JavaScriptを読んで、デバッグしようとして問題が発生した場合は、
+きれいな印刷オプション (pretty printing option) は、生活をより便利に利用できます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_40.png" alt="image_40.png" />
+</p>
+</div>
+
+
+<p>
+そこで中括弧 {}（「Pretty Print プリティ印刷」）、左下隅にあるアイコンをクリックして、JavaScript をより人間が読める形式に変換する。
+さらに、これは区切り点のデバッグおよびセットにとってより簡単です。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_41.png" alt="image_41.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-6" class="outline-3">
+<h3 id="sec-1-6"><span class="section-number-3">1.6</span> ソースマップ Working With Source Maps</h3>
+<div class="outline-text-3" id="text-1-6">
+<p>
+あなたは今まで自分では、パフォーマンスに影響を与えることなく、あなたが結合して、それを縮小した後でも、
+クライアント側のコードを読みやすく維持し、より重要なのはデバッグ可能で望むものを見つけられたことがありますか？
+今は、ソースマップ <a href="https://docs.google.com/document/d/1U1RGAehQwRypUTovF1KRlpiOFze0b-_2gc6fAH0KY0k/edit?hl=en_US&pli=1&pli=1">Source Map Revision 3 Proposal - Google Drive</a> の魔法を通じてできる。
+</p>
+
+<p>
+ソースマップは、前処理 (pre-processed) されているファイルとポスト処理 (post-processed) されるものとの関係を作成するために
+処理されたファイルで使用できる（JSONベース）汎用マッピング形式です。
+私たちに最も関連するのは、彼らは、デバッグのために戻って未構築の状態に合わせて 結合され/縮小された スクリプトをマップするために使用することができるということである。
+</p>
+
+<p>
+ソースマップ自体は、以下のように簡単に見えることができます。:
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-javascript">{
+version : 3,
+file: "out.js",
+sourceRoot : "",
+sources: ["foo.js", "bar.js"],
+names: ["src", "maps", "are", "fun"],
+mappings: "AAgBC,SAAQ,CAAEA"
+}
+</pre>
+</div>
+
+<p>
+その考えは、本番用にビルドするときです、
+又は、JavaScriptファイルを結合し、縮小するとともに、あなたの元のファイルに関する情報を保持するソースマップを生成します。
+あなたが生成された JavaScript 内の特定の行や列番号を照会するときには、元の場所に返すソースマップで検索を行うことができます。
+DevTools は、自動的にソースマップを解析して、unminified と結合していないファイルを実行しているかのように見せることができます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_42.png" alt="image_42.png" />
+</p>
+</div>
+
+
+<p>
+表示する前に、ソースマップの次の現実世界の実装では、
+dev のツールパネルの[設定] COG をクリックして「Enable source maps ソースマップを有効にする」オプションをチェックして、ソースマップ機能を有効にしていることを確認してください。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_43.png" alt="image_43.png" />
+</p>
+</div>
+
+
+<p>
+有効になったソースマッピングで、Chromeでフォント dragr ツール <a href="http://dev.fontdragr.com/">font dragr | Drag and drop font testing</a> の特別なビルドを見てみましょう、
+あなたのJavaScriptがコンパイルされていない、あなたはすべての個々の JavaScript が、それが参照するファイルを見ることができることがわかります。
+これは、ソース·マッピングを使用しますが、裏で実際にコンパイルされたコードを実行しています。
+すべてのエラー、ログやブレークポイントは素晴らしいデバッグ用にdevのコードにマップされます！
+したがって、実際にはそれはあなたが生産のDEVサイトを実行しているような錯覚を与えます。
+</p>
+</div>
+
+<div id="outline-container-sec-1-6-1" class="outline-4">
+<h4 id="sec-1-6-1"><span class="section-number-4">1.6.1</span> ソース・マップはどのように作動しますか。 How do Source Maps work?</h4>
+<div class="outline-text-4" id="text-1-6-1">
+<p>
+一旦、ソースマップを出力サポートしているツールを使用してJavaScriptを縮小したら、その側に sourcemap ファイルが存在します。
+現在、クロージャコンパイラ Closure Compiler と UglifyJS2.0 は、これを達成するためのこのような2つのツールですが、そのサポートはCoffeeScriptのとSASSのソースマップを出力可能なツールもあります。
+特別なコメントは、ソースマップが使用可能であるDevToolsに意味する、ファイルの最後に置かれます。
+</p>
+
+<pre class="example">
+//@ sourceMappingURL=/path/to/file.js.map
+</pre>
+
+<p>
+これは、元のソースファイルに戻ってその場所への呼び出しをマッピングするDevToolsを可能にします。
+あなたが変なコメントの考えが気に入らない場合は、代わりにコンパイル済みのJavaScriptファイルに特別なヘッダを設定することができます。:
+</p>
+
+<pre class="example">
+X-SourceMap: /path/to/file.js.map
+</pre>
+
+<p>
+コメントのようこれはどこのJavaScriptファイルに関連付けられたソースマップを探すためにあなたのソースマップコンシューマーを教えてくれます。
+このヘッダには、単一行コメントがサポートされていない言語でソースマップを参照する問題を取得します。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-6-2" class="outline-4">
+<h4 id="sec-1-6-2"><span class="section-number-4">1.6.2</span> @sourceURL and displayName in action</h4>
+<div class="outline-text-4" id="text-1-6-2">
+<p>
+次の規則スペックソースマップの一部ではないが版とそので作業する場合は、開発をより簡単にすることができますが。
+</p>
+
+<p>
+このヘルパーは //@ sourceMappingURL 財産と非常によく似ていますし、実際にソースマップ V3 の仕様に記載されている。
+彼らはあなたの dev のツールで、より論理名として表示されるように evaled され、コード内の以下の特別なコメントを含むことで、試用版とその名前を付けることができます。
+</p>
+
+<pre class="example">
+//@ sourceURL=source.coffee
+</pre>
+</div>
+
+<ol class="org-ol"><li>sourceURL をつかって作業する Working with sourceURL<br  /><div class="outline-text-5" id="text-1-6-2-1">
+<ul class="org-ul">
+<li>デモ <a href="http://www.thecssninja.com/demo/source_mapping/compile.html">A simple example of //# sourceURL eval naming</a> に移動します
+</li>
+<li>DevToolsを開き、ソース]パネルに移動します。
+</li>
+<li>入力フィールド：名前、コードに、ファイル名に入力します。
+</li>
+<li>コンパイルボタンをクリックしてください。
+</li>
+<li>アラートは、CoffeeScriptのソースからの評価を合計して表示されます
+</li>
+<li>あなたはソースサブパネルを展開すると、今、あなたは、以前入力したカスタムファイル名で新規ファイルが表示されます。
+このファイルを表示するには、ダブルクリックすると、それは私たちのオリジナルのソース用にコンパイルされたJavaScriptが含まれています。
+最後の行にただし、元のソースファイルが何であったかを示す //@ sourceURL にコメントになります。
+これは大幅に言語の抽象化を扱うとき、デバッグを支援することができます。
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/debugging-javascript/image_44.png" alt="image_44.png" />
+</p>
+</div>
+</div>
+</li></ol>
+</div>
+</div>
+
+<div id="outline-container-sec-1-7" class="outline-3">
+<h3 id="sec-1-7"><span class="section-number-3">1.7</span> Read more</h3>
+<div class="outline-text-3" id="text-1-7">
+</div><div id="outline-container-sec-1-7-1" class="outline-4">
+<h4 id="sec-1-7-1"><span class="section-number-4">1.7.1</span> Conditional breakpoints</h4>
+<div class="outline-text-4" id="text-1-7-1">
+<p>
+<a href="http://www.randomthink.net/blog/2012/11/breakpoint-actions-in-javascript/">Breakpoint Actions in JavaScript - RandomThink.net</a>
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-7-2" class="outline-4">
+<h4 id="sec-1-7-2"><span class="section-number-4">1.7.2</span> Working With Source Maps</h4>
+<div class="outline-text-4" id="text-1-7-2">
+<p>
+<a href="https://www.youtube.com/watch?feature=player_embedded&v=HijZNR6kc9A">The Breakpoint Ep 3: The Sourcemap Spectacular with Paul Irish and Addy Osmani - YouTube</a>
+<a href="http://www.html5rocks.com/en/tutorials/developertools/sourcemaps/">Introduction to JavaScript Source Maps - HTML5 Rocks</a>
+<a href="http://net.tutsplus.com/tutorials/tools-and-tips/source-maps-101/">An Introduction to Source Maps | Nettuts+</a>
+<a href="https://github.com/ryanseddon/source-map/wiki/Source-maps%3A-languages%2C-tools-and-other-info">Source maps: languages, tools and other info · ryanseddon/source-map Wiki</a>
+<a href="http://www.thecssninja.com/javascript/multi-level-sourcemaps">Multi-level Source maps | The CSS Ninja - All things CSS, JavaScript &amp; HTML</a>
+<a href="http://www.coffeescriptlove.com/2012/04/source-maps-for-coffeescript.html">CoffeeScript Love: Source Maps for CoffeeScript</a>
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: chidamiyuki</p>
+<p class="date">Created: 2014-01-19 Sun 22:20</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.1)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>

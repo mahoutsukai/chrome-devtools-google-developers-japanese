@@ -1,0 +1,1475 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>06-Performance profiling with the Timeline</title>
+<!-- 2014-01-19 Sun 22:22 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="chidamiyuki" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/org/worg.css" />
+<link rel="stylesheet" type="text/css" href="../css/mi.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">06-Performance profiling with the Timeline</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Performance profiling with the Timeline Timeline を利用したパフォーマンスのプロファイリング (Last updated 2013-11-15)</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Timeline パネルの概要 Timeline panel overview</a>
+<ul>
+<li><a href="#sec-1-1-1">1.1.1. Events mode</a></li>
+<li><a href="#sec-1-1-2">1.1.2. Frames mode</a></li>
+<li><a href="#sec-1-1-3">1.1.3. Memory mode</a></li>
+<li><a href="#sec-1-1-4">1.1.4. 記録を作る Making a recording</a></li>
+<li><a href="#sec-1-1-5">1.1.5. ページのロードを記録 Recording a page load</a></li>
+<li><a href="#sec-1-1-6">1.1.6. 記録を行うためのヒント Tips for making recordings</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-2">1.2. Timeline の記録を分析する Analyzing Timeline recordings</a>
+<ul>
+<li><a href="#sec-1-2-1">1.2.1. レコードに関する詳細の表示 Viewing details about a record</a></li>
+<li><a href="#sec-1-2-2">1.2.2. DOMContentLoaded と Loadイベントマーカー DOMContentLoaded and Load event markers</a></li>
+<li><a href="#sec-1-2-3">1.2.3. 強制的な同時のレイアウトを見つけること, 強制同期レイアウトを配置する Locating forced synchronous layouts</a></li>
+<li><a href="#sec-1-2-4">1.2.4. ネストされたイベントについて About nested events</a></li>
+<li><a href="#sec-1-2-5">1.2.5. レコードをフィルタリングと検索 Filtering and searching records</a></li>
+<li><a href="#sec-1-2-6">1.2.6. Timeline のセクションにズームイン Zooming in on a Timeline section</a></li>
+<li><a href="#sec-1-2-7">1.2.7. 記録の保存と読み込み Saving and loading recordings</a></li>
+<li><a href="#sec-1-2-8">1.2.8. ユーザー制作タイムラインのイベント User-produced Timeline events</a></li>
+<li><a href="#sec-1-2-9">1.2.9. 記録中の CPU 時間の表示 View CPU time in recordings</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-3">1.3. Timeline イベントのリファレンス Timeline event reference</a>
+<ul>
+<li><a href="#sec-1-3-1">1.3.1. 共通のイベントプロパティ Common event properties</a></li>
+<li><a href="#sec-1-3-2">1.3.2. Loading events  Loading イベント</a></li>
+<li><a href="#sec-1-3-3">1.3.3. Scripting events</a></li>
+<li><a href="#sec-1-3-4">1.3.4. Rendering events</a></li>
+<li><a href="#sec-1-3-5">1.3.5. Painting events</a></li>
+</ul>
+</li>
+<li><a href="#sec-1-4">1.4. Timeline demo: Diagnosing forced synchronous layouts 強制同期レイアウトを診断 (Last updated 2013-11-04)</a>
+<ul>
+<li><a href="#sec-1-4-1">1.4.1. Make a recording  記録をつくる</a></li>
+<li><a href="#sec-1-4-2">1.4.2. Analyze the recording  記録を分析する</a></li>
+<li><a href="#sec-1-4-3">1.4.3. Apply fix within DevTools  DevTools内で修正プログラムを適用する</a></li>
+<li><a href="#sec-1-4-4">1.4.4. Verify with another recording  別の記録で確認する</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> <a href="https://developers.google.com/chrome-developer-tools/docs/timeline">Performance profiling with the Timeline</a> Timeline を利用したパフォーマンスのプロファイリング (Last updated 2013-11-15)</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<span class="timestamp-wrapper"><span class="timestamp">[2014-01-14 Tue 13:01]</span></span>
+タイムラインパネルでは、それが実行されると、アプリケーション内のすべての活動を記録し、分析することができます。
+それは、アプリケーションの体感的なパフォーマンスの問題を調査を開始するのに最適な場所です。
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Timeline パネルの概要 Timeline panel overview</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+タイムラインは、3つの主要セクションがあります: 上部の概要セクション、レコードビュー、およびツールバー
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image05.png" alt="image05.png" />
+</p>
+</div>
+
+
+<ul class="org-ul">
+<li>recording を始めるか止めるためには、Record トグル・ボタンを押してください ( <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#making_a_recording">Making a recording</a> 参照)。
+</li>
+<li>Timelineからレコードをクリアするには、Clear recording ボタンを押してください。
+</li>
+<li>Glue 非同期 (async) イベントモードでは、より簡単にその原因に非同期イベントを相互に関連付けることができます ( <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#about_nested_events">About nested events</a> 参照)
+</li>
+<li>あなたはそれらの種類や期間に応じて、Timeline に示されているレコードをフィルタリングすることができます (<a href="https://developers.google.com/chrome-developer-tools/docs/timeline#filtering_and_searching_records">Filtering and searching records</a> 参照)
+</li>
+</ul>
+
+<p>
+録音中は、発生した各イベントのレコードは、「ウォーターフォール (waterfall)」のプレゼンテーションのレコードビューに追加されます。
+レコードは、4 性基の 1つ に分類されます : Loading, Scripting, Rendering, and Painting
+これらのレコードは、次のように色分けされています :
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image01.png" alt="image01.png" />
+</p>
+</div>
+
+
+<ul class="org-ul">
+<li>Loading events: 青
+</li>
+<li>Scripting     : 黄
+</li>
+<li>Rendering     : 紫
+</li>
+<li>Painting      : 緑
+</li>
+</ul>
+
+
+<p>
+例えば、下の記録は Chrome にロードされている HTML ページのです。
+最初のレコード（Send Request 送信要求）は、ページ Chrome の HTTP リクエストであり、
+（対応する HTTP レスポンスのための）Receive Response (受信応答) 記録に続いて、
+いくつかは、（実際のページデータのための）Receive Data レコード(データ·レコードを受信)し、
+それから、Finish Loading (読み込み完了) レコード。
+タイムラインとその説明によって記録されたイベントの完全なリストについては、 <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#timeline_event_reference">Timeline event reference</a> を参照してください。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image06.png" alt="image06.png" />
+</p>
+</div>
+
+
+<p>
+Timeline レコードにカーソルを合わせると、関連するイベントについての詳細がポップアップに表示されます。
+例えば、下のスクリーンショットは、画像リソースに関連付けられている Finish Loading (完了読み込み) レコードの詳細が表示されます。
+Timeline イベントリファレンスは、各レコード形式に利用可能な詳細について説明します。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image12.png" alt="image12.png" />
+</p>
+</div>
+
+
+<p>
+詳細な Records ビューに加えて、3 つのモードのいずれかで recordings を調べることができます。
+</p>
+
+<ul class="org-ul">
+<li>Events 出来事モードは、イベント・カテゴリによって記録された出来事をすべて示します。
+</li>
+<li>Frames モードは、ページのレンダリングパフォーマンスを示しています。
+</li>
+<li>Memory モードは、時間とともにあなたのページのメモリ使用量を示します。
+</li>
+</ul>
+</div>
+
+<div id="outline-container-sec-1-1-1" class="outline-4">
+<h4 id="sec-1-1-1"><span class="section-number-4">1.1.1</span> Events mode</h4>
+<div class="outline-text-4" id="text-1-1-1">
+<p>
+Events モードは、それらのタイプ別に編成されて、recording 中に捕らえられた (captured) すべての出来事の概観を提供します。
+一目で、アプリケーションは、どこで最多の時間を費やしているか、タスクのどのタイプについて費やされているか場所を確認することができます。
+このビュー内の各横棒の長さは、そのイベントが完了するのに要した時間に相当する。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image27.png" alt="image27.png" />
+</p>
+</div>
+
+
+<p>
+あなたが Events ビューの時間の範囲を選択すると (<a href="https://developers.google.com/chrome-developer-tools/docs/timeline#zooming_in_on_a_timeline_section">Zooming in on a Timeline section</a> 参照) 、
+Records ビューは、それらのレコードを表示するだけに制限されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image11.png" alt="image11.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-1-2" class="outline-4">
+<h4 id="sec-1-1-2"><span class="section-number-4">1.1.2</span> Frames mode</h4>
+<div class="outline-text-4" id="text-1-1-2">
+<p>
+Frames モードは、アプリケーションのレンダリングパフォーマンスへの洞察を提供します。
+「フレーム」とは、ブラウザが表示するコンテンツの単一のフレームをレンダリングするためにしなければならない仕事を表して
+— run JavaScript, (JavaScript を走らせる、)
+handle events, (イベントを処理する、)
+update the DOM and change styles, (DOM を更新し、スタイルを変更する、)
+layout and paint the page. (ページのレイアウトおよびペイント)
+目標は、アプリが 60 フレーム/秒 (fps) で動作するようにするためのものであり、
+ほとんどの（すべてではない）、ビデオ·ディスプレイの 60Hz のリフレッシュレートに対応する。
+そのため、アプリケーションは、各フレームの準備のために、約 16.6 ミリ秒（ 1000 ミリ秒 / 60 ）があります。
+</p>
+
+<p>
+Frames ビュー全体の横線は 60 FPS、30 FPS のフレームレートの目標を表すものです。
+フレームの高さは、そのフレームをレンダリングするのに要した時間に相当する。
+各フレームを充填する色は、タスクの種類の種類ごとにかかった時間の割合を示している。
+</p>
+
+<p>
+フレームをレンダリングする時間は、Records ビューの頂上に表示されます。
+表示された時間に hover すると、タスクの種類ごとに費やす時間を含むフレーム、CPU 時間、および計算された FPS についての、付加的な情報が表示されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image02.png" alt="image02.png" />
+</p>
+</div>
+
+
+<p>
+Frames モードを使用するデモンストレーションの <a href="https://developers.google.com/chrome-developer-tools/docs/demos/too-much-layout/">Timeline demo: Diagnosing forced synchronous layouts</a> を参照してください。
+</p>
+</div>
+
+<ol class="org-ol"><li>透明、または、ライトグレーのフレームに関して About clear or light-gray frames<br  /><div class="outline-text-5" id="text-1-1-2-1">
+<p>
+薄い灰色か、透明(中空, hollow)なフレームの領域が表示されることがあります。
+これらの領域がそれぞれ示すのは :
+</p>
+
+<ul class="org-ul">
+<li>DevTools により計測されなかった活動 (Activity) ( -&gt; 薄グレー ?? )
+</li>
+<li>ディスプレイのリフレッシュサイクル間のアイドル時間。( -&gt; 透明 ?? )
+</li>
+</ul>
+
+<p>
+以下の記録のフレームは未計測の活動、および、アイドル時間の両方が表示されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/clear-frames.png" alt="clear-frames.png" />
+</p>
+</div>
+
+<hr  />
+<p>
+NOTE:
+棒の内の空の余白について、より多くの詳細を望むか?
+GPUによってボトルネックになった場合に評価できる方法を説明した、 Chrome エンジニア ナット·ドゥーカの説明をお読みください。
+ <a href="https://plus.google.com/+NatDuca/posts/BvMgvdnBvaQ?e=-RedirectToSandbox">Nat Duca - Google+ - The question has come up a few times lately, "What are the…</a>
+</p>
+<hr  />
+</div>
+</li>
+<li>フレームレートの統計情報を表示する Viewing frame rate statistics<br  /><div class="outline-text-5" id="text-1-1-2-2">
+<p>
+表わされた平均フレームレートおよびその標準偏差は、選択したフレーム範囲の Timeline パネルの下部に表示されます。
+平均的なフレームレートにカーソルを合わせると、ポップアップにフレーム選択に関する追加の情報が表示されます :
+</p>
+
+<ul class="org-ul">
+<li>Selected range (選択した範囲) &#x2013; 選択された時間範囲、および選択中のフレームの数。
+</li>
+<li>Minimum Time (最小時間) &#x2013; 選択されたフレーム、括弧内の対応フレームレートの最低時間。
+</li>
+<li>Average Time (平均時間) &#x2013; 選択されたフレーム、括弧内の対応フレームレートの平均時間。
+</li>
+<li>Maximum Time (最大時間) &#x2013; 選択された範囲、および括弧内の対応フレームレートの最大時間。
+</li>
+<li>Standard Deviation (標準偏差) &#x2013; 計算された平均時間の変動量。
+</li>
+<li>Time by category (カテゴリ別の時間)&#x2013; プロセスの各タイプに費やされる時間の量は、種類によって色分けされている。
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/average.png" alt="average.png" />
+</p>
+</div>
+</div>
+</li></ol>
+</div>
+
+<div id="outline-container-sec-1-1-3" class="outline-4">
+<h4 id="sec-1-1-3"><span class="section-number-4">1.1.3</span> Memory mode</h4>
+<div class="outline-text-4" id="text-1-1-3">
+<p>
+Memory ビューを使用すると、時間にわたる適用によってアプリケーションに使用されるメモリのグラフを示し、
+メモリに保持されている文書、DOM ノード、およびイベント·リスナーの数（つまり、ガベージコレクションされていないこと、である）のカウンタを維持します。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image20.png" alt="image20.png" />
+</p>
+</div>
+
+
+<p>
+Memory モードは、何がメモリーリークを引き起こしているかあなたに正確に示すことができません。
+しかし、それは、あなたが適用でのどんな出来事がメモリーリークに結びついているかもしれないか識別するのを助けることができます。
+その後、漏れを引き起こしている特定のコードを識別するためにヒープ・プロフィーラー <a href="https://developers.google.com/chrome-developer-tools/docs/heap-profiling">Heap Profiler</a> を使用することができます。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-1-4" class="outline-4">
+<h4 id="sec-1-1-4"><span class="section-number-4">1.1.4</span> 記録を作る Making a recording</h4>
+<div class="outline-text-4" id="text-1-1-4">
+<p>
+recording (記録) を作成するには、記録セッションを開始するアプリケーションを操作した後、録画を停止します。
+それは、あなたが記録したい活動の種類を前もって知るのを支援します。
+&#x2013; 例えば、ページの読み込み、画像のリストのスクロールパフォーマンス、などしてから、そのスクリプトに固執する。
+</p>
+</div>
+
+<ol class="org-ol"><li>記録を作成するには： To make a recording:<br  /><div class="outline-text-5" id="text-1-1-4-1">
+<ol class="org-ol">
+<li>記録したいページを開きます。
+</li>
+<li>Timeline パネルを開き、次のいずれかを実行して、録音を開始します。
+<ul class="org-ul">
+<li>Timeline パネルの下部にある丸い録音ボタンをクリックします。
+</li>
+<li>キーボードショートカットで、[Ctrl] + [E], or [Cmd]+[E] on Mac.
+</li>
+</ul>
+<p>
+録音ボタンは、録音中に赤色になります。
+</p>
+</li>
+
+<li>目的の動作を記録するために必要なユーザーアクションを実行します。
+</li>
+<li>赤い録音ボタンを押すか、キーボードショートカットを繰り返して録画を停止します。
+</li>
+</ol>
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-1-1-5" class="outline-4">
+<h4 id="sec-1-1-5"><span class="section-number-4">1.1.5</span> ページのロードを記録 Recording a page load</h4>
+<div class="outline-text-4" id="text-1-1-5">
+<p>
+一般的なタスクは、最初のネットワーク要求からページの読み込みを記録することである。
+それらがあなたに録音を速く始めさせ、ページを再ロードし、録音を止めるので、キーボード・ショートカットはこのシナリオに役立ちます。
+</p>
+</div>
+
+<ol class="org-ol"><li>ページのロードを記録するには： To record a page load:<br  /><div class="outline-text-5" id="text-1-1-5-1">
+<ol class="org-ol">
+<li>新しいタブまたはウィンドウ内の任意の <a href="http://jankfree.org/">Web ページ</a> を開きます。
+</li>
+<li>Timeline を開き、Enter キーを押しCmdを+ Eキー（Mac）またはCtrl+ E（Windowsの/ Linuxの）は、記録を開始します。
+</li>
+<li>Cmd+ R または Ctrl + R を素早くプレスし、ブラウザのページを再読み込みします。
+</li>
+<li>ページの読み込みが終了したときに記録を停止（赤いイベントマーク <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#domcontentloaded_and_load_event_markers">event marker</a> を探してください）​​。
+</li>
+</ol>
+
+<p>
+あなたの記録は、次のようになります。
+最初のレコードは（送信要求, Send Request）ページの Chrome の HTTP リクエストであり、
+対応する HTTP レスポンスの受信応答 (Receive Response) レコードに続いて、
+1つまたは複数の受信データ (Receive Data) レコードが続き、
+フィニッシュのロード (Finish Loading) レコード、および構文解析のHTML (Parse HTML) レコード。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image06.png" alt="image06.png" />
+</p>
+</div>
+
+
+<p>
+各レコード·タイプの詳細については、タイムラインイベントリファレンス <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#timeline_event_reference">Timeline event reference</a> を参照してください。
+</p>
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-1-1-6" class="outline-4">
+<h4 id="sec-1-1-6"><span class="section-number-4">1.1.6</span> 記録を行うためのヒント Tips for making recordings</h4>
+<div class="outline-text-4" id="text-1-1-6">
+<p>
+ここで記録を行うためのヒントをいくつか紹介します :
+</p>
+
+<ul class="org-ul">
+<li><b>できるだけ短く録音しておいてください。</b> 短い記録は、一般的に、分析を容易にする。
+</li>
+<li><b>不必要な行動を避ける。</b> あなたが記録して分析したい活動に無関係なあるアクション（マウスのクリック、ネットワーク負荷、など）を避けるようにしてください。
+例えば、もしあなたが、「ログイン」ボタンをクリックした後に発生するイベントを記録したい場合は、ページをスクロールしないでください、イメージをロードします、など。
+</li>
+<li><b>ブラウザのキャッシュを無効にします。</b> ネットワーク操作を記録する場合、それは DevTools 設定パネルで、ブラウザのキャッシュを無効にすることをお勧めします。
+</li>
+<li><b>拡張機能を無効にします。</b> Chrome の拡張機能は、アプリケーションのタイムライン録音に無関係なノイズを追加することができます。次のいずれかの操作を実行できます :
+
+<ul class="org-ul">
+<li>シークレットモードでのChromeのウィンドウを開きます。 <a href="https://support.google.com/chrome/answer/95464?hl=en">Incognito mode (browse in private) - Chrome Help</a>
+</li>
+<li>テストのための新しいChromeのユーザープロファイルを作成します。 <a href="https://support.google.com/chrome/answer/142059?hl=en">Create a new browser user profile - Chrome Help</a>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Timeline の記録を分析する Analyzing Timeline recordings</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+このセクションでは、Timeline の記録を分析するためのヒントを提供します。
+</p>
+</div>
+<div id="outline-container-sec-1-2-1" class="outline-4">
+<h4 id="sec-1-2-1"><span class="section-number-4">1.2.1</span> レコードに関する詳細の表示 Viewing details about a record</h4>
+<div class="outline-text-4" id="text-1-2-1">
+<p>
+Timeline 内のレコードの上にマウスを置くと、ポップアップに、イベントに関する追加情報が表示されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image29.png" alt="image29.png" />
+</p>
+</div>
+
+
+<p>
+特定の詳細は、すべてのタイプのイベントで存在する、
+いくつかの唯一の特定のイベントタイプに適用している、このような期間 (Duration) や CPU 時間 (CPU Time) など。
+レコードの各種類が含まれている詳細内容については、<a href="https://developers.google.com/chrome-developer-tools/docs/timeline#timeline_event_reference">Timeline event reference</a> を参照してください。
+</p>
+
+<p>
+Paint レコードにカーソルを合わせると、以下に示すように、DevTools は、青色の半透明の四角形で更新された画面の領域を強調します。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/paint-hover.png" alt="paint-hover.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2-2" class="outline-4">
+<h4 id="sec-1-2-2"><span class="section-number-4">1.2.2</span> DOMContentLoaded と Loadイベントマーカー DOMContentLoaded and Load event markers</h4>
+<div class="outline-text-4" id="text-1-2-2">
+<p>
+Timeline は、DOMContentLoaded および ロードイベント は、ブラウザによって送出されたとき、それぞれ、青と赤い線で各記録に注釈を示す。
+ページのDOMのすべてのコンテンツが読み込まれて解析されたときに DOMContentLoaded イベントが発生します。 -&gt; 青
+load イベントは、一度、すべてのドキュメントのリソースを発射される（画像やCSSファイル、など）を完全にロードされている。 -&gt; 赤
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image28.png" alt="image28.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2-3" class="outline-4">
+<h4 id="sec-1-2-3"><span class="section-number-4">1.2.3</span> 強制的な同時のレイアウトを見つけること, 強制同期レイアウトを配置する Locating forced synchronous layouts</h4>
+<div class="outline-text-4" id="text-1-2-3">
+<p>
+Layout (紫) は、Chrome がページのすべての要素の位置およびサイズを計算するプロセスです。
+通常は、Chromeは、アプリケーションから、CSSやDOMの更新に対応して「いい加減 (怠惰な, lazily) 」なレイアウトを実行します。
+これは、バッチ・スタイルおよび各オンデマンドに反応することではなくレイアウト変更へ Chrome を許可します。
+ただし、アプリケーションは、element.offsetWidth などの特定のレイアウト依存要素のプロパティの値を照会することによって、
+Chrome は強制的に直ちに非同期にレイアウトを行うことができます。
+これらのいわゆる「強制同期のレイアウト (forced synchronous layouts) 」は、
+頻繁に繰り返されるか、大きな DOM ツリーに対して実行された場合、大きなパフォーマンス上のボトルネックになりえます。
+</p>
+
+<p>
+アプリケーションが強制非同期レイアウトやマークを起こす際に、Timeline に、黄色の警告アイコン (！ マーク) でそのような記録を識別できます。
+レコードにカーソルを合わせると、それが問題のあるコードのスタックトレースを含む内容がポップアップに表示されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image07.png" alt="image07.png" />
+</p>
+</div>
+
+
+<p>
+レコードがレイアウトを強要した子どもレコード <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#about_nested_events">child record</a> を含んでいる場合、親レコードはわずかに暗くなった黄色アイコンで印をつけられます。
+強制的なレイアウトを引き起こした子どもレコードを見つけるために親レコードを拡張してください。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/forced-layout-expand.png" alt="forced-layout-expand.png" />
+</p>
+</div>
+
+
+<p>
+パフォーマンスの問題、これらの種類を検出し、固定するためのデモンストレーションの
+強制同期レイアウトのデモ <a href="https://developers.google.com/chrome-developer-tools/docs/demos/too-much-layout/">Forced Synchronous Layout demo</a> を参照してください。
+</p>
+</div>
+</div>
+<div id="outline-container-sec-1-2-4" class="outline-4">
+<h4 id="sec-1-2-4"><span class="section-number-4">1.2.4</span> ネストされたイベントについて About nested events</h4>
+<div class="outline-text-4" id="text-1-2-4">
+<p>
+Timeline レコードでのイベントは、時々、別のイベントの下に視覚的に入れ子にされる。
+その入れ子の「子」のイベントを見るために「親」イベントを展開します。
+スケジュールがイベントを入れ子にするのは 2 つの理由がある :
+</p>
+
+<ul class="org-ul">
+<li>以前に発生したイベントの処理中に発生した同期イベント。
+各イベントには、内部的に、単一の「連続」イベントに変換される 2 原子イベント、スタート用と終わりのための 1 を発生する。
+これらの 2 原子イベントの間に発生する他のイベントには、外のイベントの子になります。
+</li>
+<li>グルー·モード <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#about_glue_mode">glue mode</a> が有効になっているときに、別のイベントの結果として起こった非同期イベント。
+</li>
+</ul>
+
+<p>
+注意：接着モードは自動的に フレームモード <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#frames_mode">Frames mode</a> では無効になっています。
+</p>
+
+<p>
+次のスクリーンショットは、ネストされた同期イベントの例を示しています。
+この場合、それがロードされるために必要ないくつかの外部リソースを見つけたとき、Chrome は一部の HTML（解析 HTML イベント, the Parse HTML event）を解析していた。
+Chrome は、解析が完了する前に、これらの要求が行われたため、送信要求イベントが構文解析 HTML イベントの子として表示されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image21.png" alt="image21.png" />
+</p>
+</div>
+</div>
+
+
+<ol class="org-ol"><li>グルーモードについて About glue mode<br  /><div class="outline-text-5" id="text-1-2-4-1">
+<p>
+アプリケーション内の多くのイベントは、非同期操作の結果である。
+ページの送信要求 Send Request の結果での 1 つの画像リソースのロードは、
+受信応答 Receive Response イベントに続いて、
+一つ以上のデータ読み込みイベントを受信 Receive Data する、
+終了ロード Finish Loading イベント。
+時々、async の出来事はそれらを関連させることを困難にするのに十分な時間までに、それらの原因から分けられます。
+原因への非同期イベントが Timeline パネルの下部にトグルで留める Glue は、それらを引き起こしたイベントの子として非同期イベントを入れ子にします。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image08.png" alt="image08.png" />
+</p>
+</div>
+</div>
+</li>
+
+<li>入れ子のイベントを備えた Timeline レコードの色分け Coloring of Timeline records with nested events<br  /><div class="outline-text-5" id="text-1-2-4-2">
+<p>
+以下のようにタイムラインバーは色分けされています。 :
+</p>
+
+<ul class="org-ul">
+<li>first, darkest part バーの最初の、最も暗い部分は親イベントとその同期のすべての子にかかった時間を表す。
+</li>
+<li>next, slightly paler color 次に、少し淡い色は、イベントとそのすべての非同期子どもがかかったCPU時間を表しています。
+これは glue モード <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#about_glue_mode">glue mode</a> がオフの場合は、上記と同じでなければ、非同期の子供を持っていないイベントのためだろう。
+</li>
+<li>palest bars 最も薄いバーは、その非同期の子の最後の最後に最初の非同期イベントの開始からの時間を表している
+（非同期子供のイベントのためのグルー·モード中のみ表示）。
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image16.png" alt="image16.png" />
+</p>
+</div>
+
+
+<p>
+あなたが親レコードにカーソルを合わせると、次の情報が表示されます :
+</p>
+
+<ul class="org-ul">
+<li>Duration 期間は、その最後の子の最後にイベントの開始からバーの長さと一致します。
+</li>
+<li>Self Time セルフタイムイベントが、そのすべての子なしに要した時間である。
+</li>
+<li>CPU time CPU 時間は、CPU バーのそれと一致します。
+</li>
+</ul>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image23.png" alt="image23.png" />
+</p>
+</div>
+</div>
+</li></ol>
+</div>
+
+<div id="outline-container-sec-1-2-5" class="outline-4">
+<h4 id="sec-1-2-5"><span class="section-number-4">1.2.5</span> レコードをフィルタリングと検索 Filtering and searching records</h4>
+<div class="outline-text-4" id="text-1-2-5">
+<p>
+あなたはそれらのタイプに応じて示したレコードをフィルタすることができます（例えばロードイベントのみを表示）、
+または、 1 ミリ秒または 15 ミリ秒に等しいもしくはより長い記録のみを表示。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image19.png" alt="image19.png" />
+</p>
+</div>
+
+
+<p>
+また、Timeline にフォーカスがあるときに [Ctrl + F] キー（windows/Linux）または [Cmd + F]（Mac）を押すと、特定の文字列のレコードを検索することができます。
+あなただけの検索語を含むものを表示するようにフィルタレコードを任意にすることができます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image09.png" alt="image09.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2-6" class="outline-4">
+<h4 id="sec-1-2-6"><span class="section-number-4">1.2.6</span> Timeline のセクションにズームイン Zooming in on a Timeline section</h4>
+<div class="outline-text-4" id="text-1-2-6">
+<p>
+簡単にレコードを分析するようにするために、タイムラインの概要のセクションに「ズームイン」することができます。どのレコードビューにも応じてタイムスケールが削減されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image03.png" alt="image03.png" />
+</p>
+</div>
+
+
+<p>
+Timeline のセクションをズームインするには、次のいずれかを実行します :
+</p>
+
+<ul class="org-ul">
+<li>概要 overview 領域では、マウスでタイムライン選択をドラッグします。
+</li>
+<li>定規 ruler エリアで灰色のスライダを調整します。
+</li>
+</ul>
+
+<p>
+ここでタイムラインの選択を操作するためのもう少しヒントを以下に示します。 :
+</p>
+
+<ul class="org-ul">
+<li>"スクラブ" 2スライダバーの間の領域をドラッグして、現在の選択された記録。
+</li>
+</ul>
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image26.png" alt="image26.png" />
+</p>
+</div>
+<ul class="org-ul">
+<li>トラックパッドをお使いの方：
+<ul class="org-ul">
+<li>2本の指で左または右にスワイプすると、現在のタイムラインのアイテムを選択します。
+</li>
+<li>2本の指で上下にスワイプすると、それぞれ、展開または現在のタイムラインの選択を縮小します。
+</li>
+</ul>
+</li>
+<li>タイムラインの選択の上にマウスを移動しながら、マウスホイールを上にスクロールするか、下には、それぞれ、展開され、選択範囲を縮小します。
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-2-7" class="outline-4">
+<h4 id="sec-1-2-7"><span class="section-number-4">1.2.7</span> 記録の保存と読み込み Saving and loading recordings</h4>
+<div class="outline-text-4" id="text-1-2-7">
+<p>
+あなたは JSON ファイルとして Timeline 記録を保存し、後で Timeline でそれを開くことができます。
+</p>
+</div>
+
+<ol class="org-ol"><li>タイムライン記録を保存するには： To save a Timeline recording:<br  /><div class="outline-text-5" id="text-1-2-7-1">
+<ol class="org-ol">
+<li>Right+click or Ctrl+click (Mac only) inside the Timeline and select Save Timeline Data…, or press the Ctrl+S keyboard shorcut.
+</li>
+<li>Pick a location to save the file and click Save
+</li>
+</ol>
+</div>
+</li>
+<li>既存のタイムライン記録ファイルを開くには、次のいずれかを実行します: To open an existing Timeline recording file, do one of the following:<br  /><div class="outline-text-5" id="text-1-2-7-2">
+<ol class="org-ol">
+<li>Right-click or Ctrl+click inside the Timeline and select Load Timeline Data&#x2026;, or press the Ctrl+O keyboard shortcut.
+</li>
+<li>Locate the JSON file and click Open.
+</li>
+</ol>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image14.png" alt="image14.png" />
+</p>
+</div>
+</div>
+</li></ol>
+</div>
+
+<div id="outline-container-sec-1-2-8" class="outline-4">
+<h4 id="sec-1-2-8"><span class="section-number-4">1.2.8</span> ユーザー制作タイムラインのイベント User-produced Timeline events</h4>
+<div class="outline-text-4" id="text-1-2-8">
+<p>
+アプリケーションでは、Timeline を記録するための独自のイベントを追加することができます。
+あなたは、そのコードを実行していた時間の範囲をマークするために記録にアトミックイベント、
+または <a href="https://developers.google.com/chrome-developer-tools/docs/console-api#consoletimelabel">console.time()</a> と <a href="https://developers.google.com/chrome-developer-tools/docs/console-api#consoletimeendlabel">console.timeEnd()</a> メソッドを追加する <a href="https://developers.google.com/chrome-developer-tools/docs/console-api#consoletimestamplabel">console.timeStamp()</a> メソッドを使用することができます。
+例えば、次の記録は console.timeStamp() は、「Adding result」イベントを表示するために使用した。
+詳細については、コンソールを使用 <a href="https://developers.google.com/chrome-developer-tools/docs/console">Using the Console</a> した <a href="https://developers.google.com/chrome-developer-tools/docs/console#marking_the_timeline">Marking the Timeline</a> を参照してください。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/adding-result.png" alt="adding-result.png" />
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2-9" class="outline-4">
+<h4 id="sec-1-2-9"><span class="section-number-4">1.2.9</span> 記録中の CPU 時間の表示 View CPU time in recordings</h4>
+<div class="outline-text-4" id="text-1-2-9">
+<p>
+DevTools 設定でオプションの 「Show CPU activity on the ruler (ルーラーでCPU 動作を表示する) 」を有効にすることにより
+Timeline 記録に CPU アクティビティをオーバーレイすることができます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image13.png" alt="image13.png" />
+</p>
+</div>
+
+
+<p>
+このオプションを有効にすると、CPU がビジーされたかを示すライトグレーのバーが、Timeline レコードの上に表示されます。
+CPU のバーの上に置くと、下図のように CPU がアクティブであった​​時に Timeline リージョンを強調しています。
+CPU のバーの長さは、通常、タイムラインの下にあるすべての（ハイライト）イベントの合計です。
+これらが一致しない場合は、次のいずれかが原因である可能性があります。
+</p>
+
+<ul class="org-ul">
+<li>ページが検査されているのと同じスレッドで実行されている他のページ
+（例えば、同じサイトから開いている2つのタブが、 1 サイトは setTimeout() メソッドの呼び出しと何かをやっている）。
+</li>
+<li>未計測の活動
+</li>
+</ul>
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/performance-profiling-with-the-timeline/image24.png" alt="image24.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Timeline イベントのリファレンス Timeline event reference</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+この項では、個々の種類別に編成記録中に生成されるレコードの種類、およびそれらのプロパティについて説明します。
+</p>
+</div>
+
+<div id="outline-container-sec-1-3-1" class="outline-4">
+<h4 id="sec-1-3-1"><span class="section-number-4">1.3.1</span> 共通のイベントプロパティ Common event properties</h4>
+<div class="outline-text-4" id="text-1-3-1">
+<p>
+特定の詳細は、いくつかの唯一の特定のイベントタイプに適用している、すべてのタイプのイベントで存在する。
+このセクションでは、さまざまなイベントタイプに共通するプロパティの一覧です。
+特定のイベントタイプに固有のプロパティを、以下のものイベントの種類の参考文献に記載されています。
+</p>
+
+<ul class="org-ul">
+<li>Aggregated time
+集約された時間
+ネストされたイベントとイベントの場合、イベントの各カテゴリに要した時間。
+</li>
+
+<li>Call Stack
+コールスタック
+子イベントのイベントのために、イベントの各カテゴリに要した時間。
+</li>
+
+<li>CPU time
+どのくらいのCPU時間が記録されたイベントでかかったか。
+</li>
+
+<li>Details
+イベントに関するその他の詳細。
+</li>
+
+<li>Duration (at time-stamp)
+期間（タイムスタンプで）
+どのくらいの時間が完了するまで、そのすべての子を持つイベントを取った。
+タイムスタンプは、記録開始時に比べて、イベントが発生した時刻である。
+</li>
+
+<li>Self time
+イベントには、その子のいずれもない場合にかかった時間。
+</li>
+
+<li>Used Heap Size
+イベントが記録されたときにアプリケーションが使用しているメモリの量、
+および、デルタ（+/ - ）最後のサンプリング以来使用ヒープサイズの変更。
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1-3-2" class="outline-4">
+<h4 id="sec-1-3-2"><span class="section-number-4">1.3.2</span> Loading events  Loading イベント</h4>
+<div class="outline-text-4" id="text-1-3-2">
+<p>
+このセクションでは、ローディングカテゴリとそのプロパティに属しているイベントを示します。
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Event</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Parse HTML</td>
+<td class="left">Chromeは、そのHTMLの構文解析アルゴリズムを実行する。</td>
+</tr>
+
+<tr>
+<td class="left">Finish Loading</td>
+<td class="left">ネットワーク要求が完了しました。</td>
+</tr>
+
+<tr>
+<td class="left">Receive Data</td>
+<td class="left">要求のためのデータが受信されました。そこに1であるか、それ以上のデータ·イベントを受け取ります。</td>
+</tr>
+
+<tr>
+<td class="left">Receive Response</td>
+<td class="left">要求から最初のHTTPレスポンス。</td>
+</tr>
+
+<tr>
+<td class="left">Send Request</td>
+<td class="left">ネットワーク要求が送信されました</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<ol class="org-ol"><li>Loading event properties  Loading イベントプロパティ<br  /><div class="outline-text-5" id="text-1-3-2-1">
+<ul class="org-ul">
+<li>Resource
+リソース
+要求されたリソースのURL。
+</li>
+
+<li>Preview
+プレビュー
+要求されたリソースのプレビュー（画像のみ）。
+</li>
+
+<li>Request Method
+リクエストメソッド
+要求に使用するHTTPメソッド（GETまたはPOSTなど）。
+</li>
+
+<li>Status Code
+状態コード
+HTTPレスポンスコード
+</li>
+
+<li>MIME Type
+MIMEの種類
+要求されたリソースのMIMEタイプ。
+</li>
+
+<li>Encoded Data Length
+エンコードされたデータの長さ
+バイト単位で要求されたリソースの長さ。
+</li>
+</ul>
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-1-3-3" class="outline-4">
+<h4 id="sec-1-3-3"><span class="section-number-4">1.3.3</span> Scripting events</h4>
+<div class="outline-text-4" id="text-1-3-3">
+<p>
+このセクションでは、スクリプトのカテゴリとそのプロパティに属しているイベントを示します。
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Event</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Animation Frame Fired</td>
+<td class="left">スケジュールされたアニメーションフレームを fired し、そのコールバックハンドラが呼び出された。</td>
+</tr>
+
+<tr>
+<td class="left">Cancel Animation Frame</td>
+<td class="left">スケジュールされたアニメーションフレームはキャンセルされました。</td>
+</tr>
+
+<tr>
+<td class="left">GC Event</td>
+<td class="left">ガベージコレクションが発生しました。</td>
+</tr>
+
+<tr>
+<td class="left">DOMContentLoaded</td>
+<td class="left">DOMContentLoadedはブラウザによって解雇された。ページのDOMのすべてのコンテンツがロードされ、解析されたときに、このイベントが発生します。</td>
+</tr>
+
+<tr>
+<td class="left">Evaluate Script</td>
+<td class="left">スクリプトを評価した。</td>
+</tr>
+
+<tr>
+<td class="left">Event</td>
+<td class="left">JavaScriptイベント（例えば「マウスダウン」 、または「キー」 、 ） 。</td>
+</tr>
+
+<tr>
+<td class="left">Function Call</td>
+<td class="left">トップレベルJavaScirptの関数呼び出しが行われた（ブラウザがJavaScriptエンジンに入るときにのみ表示されます）。</td>
+</tr>
+
+<tr>
+<td class="left">Install Timer</td>
+<td class="left">タイマーのsetInterval() またはのsetTimeout() で作成されました。</td>
+</tr>
+
+<tr>
+<td class="left">Request Animation Frame</td>
+<td class="left">requestAnimationFrame() 呼び出しは、新しいフレームをスケジュール設定</td>
+</tr>
+
+<tr>
+<td class="left">Remove Timer</td>
+<td class="left">以前に作成されたタイマーがクリアされました</td>
+</tr>
+
+<tr>
+<td class="left">Time</td>
+<td class="left">console.time() というスクリプトが呼ばれた</td>
+</tr>
+
+<tr>
+<td class="left">Time End</td>
+<td class="left">console.timeEnd() というスクリプトが呼ばれた</td>
+</tr>
+
+<tr>
+<td class="left">Timer Fired</td>
+<td class="left">タイマーは、そのがのsetInterval() またはのsetTimeout() で予定されていた解雇した。</td>
+</tr>
+
+<tr>
+<td class="left">XHR Ready State Change</td>
+<td class="left">XMLHTTPRequestをの準備状態が変更されました。</td>
+</tr>
+
+<tr>
+<td class="left">XHR Load</td>
+<td class="left">XMLHTTPRequestを読み込みが完了。</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<ol class="org-ol"><li>Scripting event properties<br  /><div class="outline-text-5" id="text-1-3-3-1">
+<ul class="org-ul">
+<li>Timer ID
+タイマID。
+</li>
+
+<li>Timeout
+タイムアウト
+タイマーで指定されたタイムアウト。
+</li>
+
+<li>Repeats
+繰り返し
+タイマーが繰り返されるかどうかを指定するブール。
+</li>
+
+<li>Function Call
+関数呼び出し
+呼び出された関数です。
+</li>
+</ul>
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-1-3-4" class="outline-4">
+<h4 id="sec-1-3-4"><span class="section-number-4">1.3.4</span> Rendering events</h4>
+<div class="outline-text-4" id="text-1-3-4">
+<p>
+このセクションでは、カテゴリとそのプロパティをレンダリングに属しているイベントを示します。
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Event</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Invalidate layout</td>
+<td class="left">ページレイアウトは、DOMの変更によって無効にされた。</td>
+</tr>
+
+<tr>
+<td class="left">Layout</td>
+<td class="left">ページレイアウトが実行されました。</td>
+</tr>
+
+<tr>
+<td class="left">Recalculate style</td>
+<td class="left">Chromeは、要素のスタイルを再計算。</td>
+</tr>
+
+<tr>
+<td class="left">Scroll</td>
+<td class="left">ネストされたビューの内容がスクロールされた。</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+<ol class="org-ol"><li>Rendering event properties<br  /><div class="outline-text-5" id="text-1-3-4-1">
+<ul class="org-ul">
+<li>Layout invalidated
+レイアウトを無効化
+レイアウトレコードの場合、レイアウトの原因となったコードのスタックトレースを無効化する。
+</li>
+
+<li>Nodes that need layout
+レイアウトを必要とするノード
+レイアウトレコードの場合、再レイアウトの前にレイアウトを必要とマークされたノードの数が開始されました。
+これらは通常、開発者のコードで無効化されたそれらのノードに加えて、上方向に再レイアウトルートへのパスです。
+</li>
+
+<li>Layout tree size
+レイアウトツリーサイズ
+レイアウトレコードの場合、再レイアウトルートの下にノードの総数（Chrome 再レイアウトが開始されたノード）。
+</li>
+
+<li>Layout scope
+レイアウトスコープ
+可能な値は「部分的」（再レイアウト境界は、DOMの一部である）、または「全文書」である。
+</li>
+
+<li>Elements affected
+影響を受けた要素
+再計算スタイルのレコードの場合、スタイルの再計算によって影響を受ける要素の数。
+</li>
+
+<li>Styles invalidated
+無効化されたスタイル
+再計算スタイルのレコードの場合、スタイルの無効化の原因となったコードのスタックトレースを提供します。
+</li>
+</ul>
+</div>
+</li></ol>
+</div>
+<div id="outline-container-sec-1-3-5" class="outline-4">
+<h4 id="sec-1-3-5"><span class="section-number-4">1.3.5</span> Painting events</h4>
+<div class="outline-text-4" id="text-1-3-5">
+<p>
+このセクションでは、Painting カテゴリーとそのプロパティに属しているイベントを示します。
+</p>
+
+<table border="2" cellspacing="0" cellpadding="6" rules="groups" frame="hsides">
+
+
+<colgroup>
+<col  class="left" />
+
+<col  class="left" />
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="left">Event</th>
+<th scope="col" class="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="left">Composite Layers</td>
+<td class="left">Chromeのレンダリングエンジンは、画像層を合成。</td>
+</tr>
+
+<tr>
+<td class="left">Image Decode</td>
+<td class="left">画像リソースは、デコードされた。</td>
+</tr>
+
+<tr>
+<td class="left">Image Resize</td>
+<td class="left">画像はその本来の寸法からサイズを変更した。</td>
+</tr>
+
+<tr>
+<td class="left">Paint</td>
+<td class="left">合成さの層は、ディスプレイの領域に描かれた。ペイント·レコードの上にマウスを移動すると、更新されたディスプレイの領域を強調しています。</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+
+<ol class="org-ol"><li>Painting event properties<br  /><div class="outline-text-5" id="text-1-3-5-1">
+<ul class="org-ul">
+<li>Location
+ペイントイベント、xとペイントの四角形のy座標のため。
+</li>
+
+<li>Dimensions
+ペイントイベントの場合、塗装領域の高さと幅。
+</li>
+</ul>
+</div>
+</li></ol>
+</div>
+</div>
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> <a href="https://developers.google.com/chrome-developer-tools/docs/demos/too-much-layout/">Timeline demo: Diagnosing forced synchronous layouts</a> 強制同期レイアウトを診断 (Last updated 2013-11-04)</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+<span class="timestamp-wrapper"><span class="timestamp">[2014-01-14 Tue 13:06]</span></span>
+このデモでは、「強制同期レイアウト」と呼ばれるパフォーマンスのボトルネックの種類を識別するために、Timeline を使用する方法を示します。
+デモアプリケーションは、 <a href="http://docs.webplatform.org/wiki/apis/timing/methods/requestAnimationFrame">requestAnimationFrame()</a> (フレームベース(構造に基づいた, frame-based)のアニメーションを行なうための推奨されたアプローチ
+<a href="http://updates.html5rocks.com/2012/05/requestAnimationFrame-API-now-with-sub-millisecond-precision">requestAnimationFrame API: now with sub-millisecond precision - HTML5Rocks Updates</a> ) を前後に使用して、いくつかの画像をアニメーションします。
+しかし、アニメーションの実行としての、吃音と素早く方向を変えるのかなりの量があります
+我々は何が起こっているかを診断するには、Timeline を使用します。
+Frames モードと強制非同期レイアウトを使用する方法の詳細については、<a href="https://developers.google.com/chrome-developer-tools/docs/timeline">Using the Timeline</a> における <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#locating_forced_synchronous_layouts">Locating forced synchronous layouts</a> (強制同期レイアウトのロケーティング, 配置する?? ) を参照してください。
+</p>
+</div>
+
+<div id="outline-container-sec-1-4-1" class="outline-4">
+<h4 id="sec-1-4-1"><span class="section-number-4">1.4.1</span> Make a recording  記録をつくる</h4>
+<div class="outline-text-4" id="text-1-4-1">
+<p>
+まず、アニメーションの記録を作ります。
+</p>
+
+<ol class="org-ol">
+<li>アニメーションを開始するには、[Start] をクリックします。
+</li>
+<li>このページの Timeline パネルを開き、[Frames] ビューに移動します。
+</li>
+<li>Timeline の Record ボタンをクリックします。
+</li>
+<li>1 〜 2 秒（ 10 から 12 のフレームが記録される）後に録音を停止し、アニメーションを停止するには [Stop] をクリックします。
+</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-sec-1-4-2" class="outline-4">
+<h4 id="sec-1-4-2"><span class="section-number-4">1.4.2</span> Analyze the recording  記録を分析する</h4>
+<div class="outline-text-4" id="text-1-4-2">
+<p>
+最初の数フレームの記録を見ると、各 1 が完了するまでに 300 ms 以上かかっていることは明らかです。
+フレームの 1 つの上にマウスを合わせると、ポップアップは、フレームに関する追加の詳細を示して表示されます。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/demos-too-much-layout/frame-rate.png" alt="frame-rate.png" />
+</p>
+</div>
+
+<p>
+「 Animation Frame Fired 」 レコードの位置を検索し、強制同期のレイアウト (forced synchronous layout) のことを示す、横の黄色の警告アイコンに注目してください。
+アイコンは、わずかにその子レコードの 1 ではなく、このレコード自体よりも、問題のあるコードが含まれていることを示す 淡色 表示されます
+その子を表示するには、「 Animation Frame Fired 」を展開します。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/demos-too-much-layout/recording-1.png" alt="recording-1.png" />
+</p>
+</div>
+
+<p>
+子レコードは、 Recalculate Style (スタイルの再計算) と Layout (レイアウト) のレコードの長い、繰り返しのパターンを示している。
+レイアウトレコードはそれぞれ、順番に、ページ上の各イメージに見合う offsetTop の値を要求する requestAnimationFrame() ハンドラの結果で、あるスタイル再計算の結果です。
+Layout レコードの 1 つの上にマウスオーバーして、Layout Forced (レイアウトの強制) プロパティの横 sources.js のリンクをクリックします。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/demos-too-much-layout/layout-warning-hover.png" alt="layout-warning-hover.png" />
+</p>
+</div>
+
+<p>
+Sources パネルは update() 関数のソースファイルで 43 行で表示されます。ここは、 requestAnimationCallback() コールバックハンドラでです。
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-javascript">// Animation loop
+function update(timestamp) {
+    for(var m = 0; m &lt; movers.length; m++) {
+        movers[m].style.left = ((Math.sin(movers[m].offsetTop + timestamp/1000)+1) * 500) + 'px';
+        }
+    raf = window.requestAnimationFrame(update);
+};
+</pre>
+</div>
+
+<p>
+私たちは、すべてのアニメーション・フレーム中にページ・レイアウトを強要することが事態を遅くすることであることを知っています。
+今、私たちは、DevToolsの中でその問題を直接解決しようとすることができます。
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-4-3" class="outline-4">
+<h4 id="sec-1-4-3"><span class="section-number-4">1.4.3</span> Apply fix within DevTools  DevTools内で修正プログラムを適用する</h4>
+<div class="outline-text-4" id="text-1-4-3">
+<p>
+今、何がパフォーマンス問題の原因かという考えを持つので、
+私たちは Sources パネル中で JavaScript ファイルを直接修正し、すぐに変更をテストすることができる。
+</p>
+
+<ol class="org-ol">
+<li>先ほど開いた Sources パネルで、次のコードで 43 行を置き換えます。
+</li>
+</ol>
+
+<div class="org-src-container">
+
+<pre class="src src-javascript">movers[m].style.left = ((Math.sin(m + timestamp/1000)+1) * 500) + 'px';
+</pre>
+</div>
+
+<p>
+このバージョンは、レイアウト依存プロパティ (offsetWidth) への保持配列の代わりに、
+そのインデックスにおける各画像の左スタイルプロパティ内を計算します。
+</p>
+
+<ol class="org-ol">
+<li>[Cmd-S] または [Ctrl-S] を押して変更内容を保存します。
+</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-sec-1-4-4" class="outline-4">
+<h4 id="sec-1-4-4"><span class="section-number-4">1.4.4</span> Verify with another recording  別の記録で確認する</h4>
+<div class="outline-text-4" id="text-1-4-4">
+<p>
+アニメーションは以前より明白に速くより滑らかです。しかし、別の記録で違いを測定することを常にお勧めします。
+それは、以下の記録のようになります。
+</p>
+
+
+<div class="figure">
+<p><img src="file:///Users/chidamiyuki/git/org/knowledge/images/chrome-developer-tools/demos-too-much-layout/fixed.png" alt="fixed.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: chidamiyuki</p>
+<p class="date">Created: 2014-01-19 Sun 22:22</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.1)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
