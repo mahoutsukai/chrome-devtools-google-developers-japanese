@@ -36,11 +36,11 @@ Chrome DevTools — Google Developers 日本語訳
 | [Integrating with DevTools](https://developers.google.com/chrome-developer-tools/docs/integrating) | |
 | [Sample DevTools Extensions](https://developers.google.com/chrome-developer-tools/docs/sample-extensions) | |
 | [Sample Debugging Protocol Clients](https://developers.google.com/chrome-developer-tools/docs/debugging-clients) | |
-| Additional Resources | *no page* |
+| Additional Resources | *(no page)* |
 | ** [Creating A Clean Testing Environment](https://developers.google.com/chrome-developer-tools/docs/clean-testing-environment) | |
 | ** [Videos](https://developers.google.com/chrome-developer-tools/docs/videos) | |
 | ** [Blog Posts](https://developers.google.com/chrome-developer-tools/docs/blog-posts) | |
-| ** [Google Chrome Developer Tools - Google グループ](https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools) | (Google グループのページ) |
+| ** [Google Chrome Developer Tools - Google グループ](https://groups.google.com/forum/?fromgroups#!forum/google-chrome-developer-tools) | *(Google グループ)* |
 | [Contributing to Chrome DevTools](https://developers.google.com/chrome-developer-tools/docs/contributing) | |
 | [Memory Analysis 101](https://developers.google.com/chrome-developer-tools/docs/memory-analysis-101) `Last updated 2013-07-08` <br /> メモリ分析 101 | [日本語](http://mahoutsukai.github.io/chrome-devtools-google-developers-japanese/knowledge/Chrome_DevTools_Google_Developers/18_Memory_Analysis_101.html) |
 
