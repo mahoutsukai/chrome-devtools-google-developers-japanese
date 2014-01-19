@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head>
+<title>06_01_Timeline_demo_Diagnosing_forced_synchronous_layouts</title>
+<!-- 2014-01-20 Mon 08:00 -->
+<meta  http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta  name="generator" content="Org-mode" />
+<meta  name="author" content="chidamiyuki" />
+<style type="text/css">
+ <!--/*--><![CDATA[/*><!--*/
+  .title  { text-align: center; }
+  .todo   { font-family: monospace; color: red; }
+  .done   { color: green; }
+  .tag    { background-color: #eee; font-family: monospace;
+            padding: 2px; font-size: 80%; font-weight: normal; }
+  .timestamp { color: #bebebe; }
+  .timestamp-kwd { color: #5f9ea0; }
+  .right  { margin-left: auto; margin-right: 0px;  text-align: right; }
+  .left   { margin-left: 0px;  margin-right: auto; text-align: left; }
+  .center { margin-left: auto; margin-right: auto; text-align: center; }
+  .underline { text-decoration: underline; }
+  #postamble p, #preamble p { font-size: 90%; margin: .2em; }
+  p.verse { margin-left: 3%; }
+  pre {
+    border: 1px solid #ccc;
+    box-shadow: 3px 3px 3px #eee;
+    padding: 8pt;
+    font-family: monospace;
+    overflow: auto;
+    margin: 1.2em;
+  }
+  pre.src {
+    position: relative;
+    overflow: visible;
+    padding-top: 1.2em;
+  }
+  pre.src:before {
+    display: none;
+    position: absolute;
+    background-color: white;
+    top: -10px;
+    right: 10px;
+    padding: 3px;
+    border: 1px solid black;
+  }
+  pre.src:hover:before { display: inline;}
+  pre.src-sh:before    { content: 'sh'; }
+  pre.src-bash:before  { content: 'sh'; }
+  pre.src-emacs-lisp:before { content: 'Emacs Lisp'; }
+  pre.src-R:before     { content: 'R'; }
+  pre.src-perl:before  { content: 'Perl'; }
+  pre.src-java:before  { content: 'Java'; }
+  pre.src-sql:before   { content: 'SQL'; }
+
+  table { border-collapse:collapse; }
+  td, th { vertical-align:top;  }
+  th.right  { text-align: center;  }
+  th.left   { text-align: center;   }
+  th.center { text-align: center; }
+  td.right  { text-align: right;  }
+  td.left   { text-align: left;   }
+  td.center { text-align: center; }
+  dt { font-weight: bold; }
+  .footpara:nth-child(2) { display: inline; }
+  .footpara { display: block; }
+  .footdef  { margin-bottom: 1em; }
+  .figure { padding: 1em; }
+  .figure p { text-align: center; }
+  .inlinetask {
+    padding: 10px;
+    border: 2px solid gray;
+    margin: 10px;
+    background: #ffffcc;
+  }
+  #org-div-home-and-up
+   { text-align: right; font-size: 70%; white-space: nowrap; }
+  textarea { overflow-x: auto; }
+  .linenr { font-size: smaller }
+  .code-highlighted { background-color: #ffff00; }
+  .org-info-js_info-navigation { border-style: none; }
+  #org-info-js_console-label
+    { font-size: 10px; font-weight: bold; white-space: nowrap; }
+  .org-info-js_search-highlight
+    { background-color: #ffff00; color: #000000; font-weight: bold; }
+  /*]]>*/-->
+</style>
+<link rel="stylesheet" type="text/css" href="../css/org/worg.css" />
+<link rel="stylesheet" type="text/css" href="../css/mi.css" />
+<script type="text/javascript">
+/*
+@licstart  The following is the entire license notice for the
+JavaScript code in this tag.
+
+Copyright (C) 2012  Free Software Foundation, Inc.
+
+The JavaScript code in this tag is free software: you can
+redistribute it and/or modify it under the terms of the GNU
+General Public License (GNU GPL) as published by the Free Software
+Foundation, either version 3 of the License, or (at your option)
+any later version.  The code is distributed WITHOUT ANY WARRANTY;
+without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE.  See the GNU GPL for more details.
+
+As additional permission under GNU GPL version 3 section 7, you
+may distribute non-source (e.g., minimized or compacted) forms of
+that code without the copy of the GNU GPL normally required by
+section 4, provided you include this license notice and a URL
+through which recipients can access the Corresponding Source.
+
+
+@licend  The above is the entire license notice
+for the JavaScript code in this tag.
+*/
+<!--/*--><![CDATA[/*><!--*/
+ function CodeHighlightOn(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(null != target) {
+     elem.cacheClassElem = elem.className;
+     elem.cacheClassTarget = target.className;
+     target.className = "code-highlighted";
+     elem.className   = "code-highlighted";
+   }
+ }
+ function CodeHighlightOff(elem, id)
+ {
+   var target = document.getElementById(id);
+   if(elem.cacheClassElem)
+     elem.className = elem.cacheClassElem;
+   if(elem.cacheClassTarget)
+     target.className = elem.cacheClassTarget;
+ }
+/*]]>*///-->
+</script>
+</head>
+<body>
+<div id="content">
+<h1 class="title">06_01_Timeline_demo_Diagnosing_forced_synchronous_layouts</h1>
+<div id="table-of-contents">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents">
+<ul>
+<li><a href="#sec-1">1. Timeline demo: Diagnosing forced synchronous layouts 強制同期レイアウトを診断 (Last updated 2013-11-04)</a>
+<ul>
+<li><a href="#sec-1-1">1.1. Make a recording  記録をつくる</a></li>
+<li><a href="#sec-1-2">1.2. Analyze the recording  記録を分析する</a></li>
+<li><a href="#sec-1-3">1.3. Apply fix within DevTools  DevTools内で修正プログラムを適用する</a></li>
+<li><a href="#sec-1-4">1.4. Verify with another recording  別の記録で確認する</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div id="outline-container-sec-1" class="outline-2">
+<h2 id="sec-1"><span class="section-number-2">1</span> <a href="https://developers.google.com/chrome-developer-tools/docs/demos/too-much-layout/">Timeline demo: Diagnosing forced synchronous layouts</a> 強制同期レイアウトを診断 (Last updated 2013-11-04)</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+<span class="timestamp-wrapper"><span class="timestamp">[2014-01-14 Tue 13:06]</span></span>
+このデモでは、「強制同期レイアウト」と呼ばれるパフォーマンスのボトルネックの種類を識別するために、Timeline を使用する方法を示します。
+デモアプリケーションは、 <a href="http://docs.webplatform.org/wiki/apis/timing/methods/requestAnimationFrame">requestAnimationFrame()</a> (フレームベース(構造に基づいた, frame-based)のアニメーションを行なうための推奨されたアプローチ
+<a href="http://updates.html5rocks.com/2012/05/requestAnimationFrame-API-now-with-sub-millisecond-precision">requestAnimationFrame API: now with sub-millisecond precision - HTML5Rocks Updates</a> ) を前後に使用して、いくつかの画像をアニメーションします。
+しかし、アニメーションの実行としての、吃音と素早く方向を変えるのかなりの量があります
+我々は何が起こっているかを診断するには、Timeline を使用します。
+Frames モードと強制非同期レイアウトを使用する方法の詳細については、<a href="https://developers.google.com/chrome-developer-tools/docs/timeline">Using the Timeline</a> における <a href="https://developers.google.com/chrome-developer-tools/docs/timeline#locating_forced_synchronous_layouts">Locating forced synchronous layouts</a> (強制同期レイアウトのロケーティング, 配置する?? ) を参照してください。
+</p>
+</div>
+
+<div id="outline-container-sec-1-1" class="outline-3">
+<h3 id="sec-1-1"><span class="section-number-3">1.1</span> Make a recording  記録をつくる</h3>
+<div class="outline-text-3" id="text-1-1">
+<p>
+まず、アニメーションの記録を作ります。
+</p>
+
+<ol class="org-ol">
+<li>アニメーションを開始するには、[Start] をクリックします。
+</li>
+<li>このページの Timeline パネルを開き、[Frames] ビューに移動します。
+</li>
+<li>Timeline の Record ボタンをクリックします。
+</li>
+<li>1 〜 2 秒（ 10 から 12 のフレームが記録される）後に録音を停止し、アニメーションを停止するには [Stop] をクリックします。
+</li>
+</ol>
+</div>
+</div>
+
+<div id="outline-container-sec-1-2" class="outline-3">
+<h3 id="sec-1-2"><span class="section-number-3">1.2</span> Analyze the recording  記録を分析する</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+最初の数フレームの記録を見ると、各 1 が完了するまでに 300 ms 以上かかっていることは明らかです。
+フレームの 1 つの上にマウスを合わせると、ポップアップは、フレームに関する追加の詳細を示して表示されます。
+</p>
+
+
+<div class="figure">
+<p><img src="../images/chrome-developer-tools/demos-too-much-layout/frame-rate.png" alt="frame-rate.png" />
+</p>
+</div>
+
+<p>
+「 Animation Frame Fired 」 レコードの位置を検索し、強制同期のレイアウト (forced synchronous layout) のことを示す、横の黄色の警告アイコンに注目してください。
+アイコンは、わずかにその子レコードの 1 ではなく、このレコード自体よりも、問題のあるコードが含まれていることを示す 淡色 表示されます
+その子を表示するには、「 Animation Frame Fired 」を展開します。
+</p>
+
+
+<div class="figure">
+<p><img src="../images/chrome-developer-tools/demos-too-much-layout/recording-1.png" alt="recording-1.png" />
+</p>
+</div>
+
+<p>
+子レコードは、 Recalculate Style (スタイルの再計算) と Layout (レイアウト) のレコードの長い、繰り返しのパターンを示している。
+レイアウトレコードはそれぞれ、順番に、ページ上の各イメージに見合う offsetTop の値を要求する requestAnimationFrame() ハンドラの結果で、あるスタイル再計算の結果です。
+Layout レコードの 1 つの上にマウスオーバーして、Layout Forced (レイアウトの強制) プロパティの横 sources.js のリンクをクリックします。
+</p>
+
+
+<div class="figure">
+<p><img src="../images/chrome-developer-tools/demos-too-much-layout/layout-warning-hover.png" alt="layout-warning-hover.png" />
+</p>
+</div>
+
+<p>
+Sources パネルは update() 関数のソースファイルで 43 行で表示されます。ここは、 requestAnimationCallback() コールバックハンドラでです。
+</p>
+
+<div class="org-src-container">
+
+<pre class="src src-javascript">// Animation loop
+function update(timestamp) {
+    for(var m = 0; m &lt; movers.length; m++) {
+        movers[m].style.left = ((Math.sin(movers[m].offsetTop + timestamp/1000)+1) * 500) + 'px';
+        }
+    raf = window.requestAnimationFrame(update);
+};
+</pre>
+</div>
+
+<p>
+私たちは、すべてのアニメーション・フレーム中にページ・レイアウトを強要することが事態を遅くすることであることを知っています。
+今、私たちは、DevToolsの中でその問題を直接解決しようとすることができます。
+</p>
+</div>
+</div>
+
+<div id="outline-container-sec-1-3" class="outline-3">
+<h3 id="sec-1-3"><span class="section-number-3">1.3</span> Apply fix within DevTools  DevTools内で修正プログラムを適用する</h3>
+<div class="outline-text-3" id="text-1-3">
+<p>
+今、何がパフォーマンス問題の原因かという考えを持つので、
+私たちは Sources パネル中で JavaScript ファイルを直接修正し、すぐに変更をテストすることができる。
+</p>
+
+<ol class="org-ol">
+<li>先ほど開いた Sources パネルで、次のコードで 43 行を置き換えます。
+</li>
+</ol>
+
+<div class="org-src-container">
+
+<pre class="src src-javascript">movers[m].style.left = ((Math.sin(m + timestamp/1000)+1) * 500) + 'px';
+</pre>
+</div>
+
+<p>
+このバージョンは、レイアウト依存プロパティ (offsetWidth) への保持配列の代わりに、
+そのインデックスにおける各画像の左スタイルプロパティ内を計算します。
+</p>
+
+<ol class="org-ol">
+<li>[Cmd-S] または [Ctrl-S] を押して変更内容を保存します。
+</li>
+</ol>
+</div>
+</div>
+<div id="outline-container-sec-1-4" class="outline-3">
+<h3 id="sec-1-4"><span class="section-number-3">1.4</span> Verify with another recording  別の記録で確認する</h3>
+<div class="outline-text-3" id="text-1-4">
+<p>
+アニメーションは以前より明白に速くより滑らかです。しかし、別の記録で違いを測定することを常にお勧めします。
+それは、以下の記録のようになります。
+</p>
+
+
+<div class="figure">
+<p><img src="../images/chrome-developer-tools/demos-too-much-layout/fixed.png" alt="fixed.png" />
+</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: chidamiyuki</p>
+<p class="date">Created: 2014-01-20 Mon 08:00</p>
+<p class="creator"><a href="http://www.gnu.org/software/emacs/">Emacs</a> 24.3.1 (<a href="http://orgmode.org">Org</a> mode 8.2.1)</p>
+<p class="validation"><a href="http://validator.w3.org/check?uri=referer">Validate</a></p>
+</div>
+</body>
+</html>
