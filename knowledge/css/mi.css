@@ -1,3 +1,4 @@
+/*
 .org-ol li {
     margin: 4em auto 8em;
 }
@@ -9,6 +10,10 @@
 
 .org-ul {
     margin: 4em auto;
+}
+*/
+h3, h4, h5, h6 {
+    margin-top: 4em;
 }
 
 hr {
